@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Button,
@@ -61,6 +61,25 @@ function Events() {
     message: "",
     severity: "success",
   });
+
+  // ✅ Fixed: Maps for fast lookup (no more undefined errors)
+  const categoryMap = useMemo(
+    () =>
+      categories.reduce((acc, cat) => {
+        acc[cat.id] = cat.category_name;
+        return acc;
+      }, {}),
+    [categories],
+  );
+
+  const venueMap = useMemo(
+    () =>
+      venues.reduce((acc, venue) => {
+        acc[venue.venue_id] = venue.name;
+        return acc;
+      }, {}),
+    [venues],
+  );
 
   useEffect(() => {
     fetchEvents();
@@ -166,7 +185,7 @@ function Events() {
   };
 
   const handleEdit = (event) => {
-    setEditingId(event.id); // ← standardized to .id
+    setEditingId(event.id);
     setFormData({
       event_name: event.event_name || "",
       description: event.description || "",
@@ -192,13 +211,11 @@ function Events() {
       showSnackbar("Delete failed", "error");
     }
   };
+
   const getCategoryName = (event) => {
-    // If backend sends nested object
     if (event.category?.category_name) {
       return event.category.category_name;
     }
-
-    // If backend sends only category_id
     return categoryMap[event.category_id] || "N/A";
   };
 
@@ -206,7 +223,6 @@ function Events() {
     if (event.venue?.name) {
       return event.venue.name;
     }
-
     return venueMap[event.venue_id] || "N/A";
   };
 
@@ -264,14 +280,13 @@ function Events() {
               {filteredEvents.map((event) => (
                 <TableRow key={event.id}>
                   {" "}
-                  {/* ← fixed to .id */}
+                  {/* ✅ Fixed - no whitespace text node */}
                   <TableCell>{event.event_name}</TableCell>
                   <TableCell>{event.event_date}</TableCell>
                   <TableCell>{event.start_time}</TableCell>
                   <TableCell>{event.end_time}</TableCell>
                   <TableCell>{event.location}</TableCell>
-                  <TableCell>{getCategoryName(event)}</TableCell>{" "}
-                  {/* ← fixed */}
+                  <TableCell>{getCategoryName(event)}</TableCell>
                   <TableCell>{getVenueName(event)}</TableCell>
                   <TableCell>{event.status}</TableCell>
                   <TableCell align="center">
@@ -297,7 +312,6 @@ function Events() {
         </TableContainer>
       )}
 
-      {/* Dialog - All required fields now included */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>{editingId ? "Update Event" : "Add Event"}</DialogTitle>
         <DialogContent>
