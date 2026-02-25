@@ -16,7 +16,7 @@ export const createEvents = async (data) => {
   try {
     const payload = {
       ...data,
-      category_id: Number(data.category_id),   // ← FIXED
+      category_id: Number(data.category_id), // ← FIXED
       venue_id: Number(data.venue_id),
     };
     const response = await axiosInstance.post(BASE, payload);
