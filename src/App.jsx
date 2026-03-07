@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { lightTheme, darkTheme } from "./theme";
-import Router from "./router"; // new router file
+import Router from "./routes"; // updated router path
 
 export default function App() {
   const [dark, setDark] = useState(false);

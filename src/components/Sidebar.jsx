@@ -36,7 +36,8 @@ export default function Sidebar({ open }) {
           width: open ? 240 : 72,
           transition: "0.3s",
         },
-      }}>
+      }}
+    >
       {/* Logo / Name */}
       <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
         <Event color="primary" />
@@ -45,27 +46,27 @@ export default function Sidebar({ open }) {
 
       <List>
         {/* Dashboard */}
-        <ListItemButton component={NavLink} to="/">
+        <ListItemButton component={NavLink} to="/admin">
           <ListItemIcon>
             <Dashboard />
           </ListItemIcon>
           {open && <ListItemText primary="Dashboard" />}
         </ListItemButton>
-        <ListItemButton component={NavLink} to="/veneu">
+        <ListItemButton component={NavLink} to="/admin/venue">
           <ListItemIcon>
             <LocationOnIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Veneu" />}
+          {open && <ListItemText primary="Venue" />}
         </ListItemButton>
         {/* Events */}
-        <ListItemButton component={NavLink} to="/events">
+        <ListItemButton component={NavLink} to="/admin/events">
           <ListItemIcon>
             <Event />
           </ListItemIcon>
           {open && <ListItemText primary="Events" />}
         </ListItemButton>
-         {/* Categories*/}
-        <ListItemButton component={NavLink} to="/categories">
+        {/* Categories*/}
+        <ListItemButton component={NavLink} to="/admin/categories">
           <ListItemIcon>
             <Event />
           </ListItemIcon>
@@ -73,7 +74,7 @@ export default function Sidebar({ open }) {
         </ListItemButton>
 
         {/*Tickets*/}
-        <ListItemButton component={NavLink} to="/tickets">
+        <ListItemButton component={NavLink} to="/admin/tickets">
           <ListItemIcon>
             <ConfirmationNumberIcon />
           </ListItemIcon>
@@ -98,10 +99,18 @@ export default function Sidebar({ open }) {
 
         <Collapse in={userOpen}>
           <List component="div" disablePadding>
-            <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/users">
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={NavLink}
+              to="/admin/users"
+            >
               <ListItemText primary="User List" />
             </ListItemButton>
-            <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/user-roles">
+            <ListItemButton
+              sx={{ pl: 4 }}
+              component={NavLink}
+              to="/admin/user-roles"
+            >
               <ListItemText primary="User Roles" />
             </ListItemButton>
           </List>
@@ -121,13 +130,15 @@ export default function Sidebar({ open }) {
             <ListItemButton
               sx={{ pl: 4 }}
               component={NavLink}
-              to="/settings/general">
+              to="/admin/settings/general"
+            >
               <ListItemText primary="General" />
             </ListItemButton>
             <ListItemButton
               sx={{ pl: 4 }}
               component={NavLink}
-              to="/settings/security">
+              to="/admin/settings/security"
+            >
               <ListItemText primary="Security" />
             </ListItemButton>
           </List>

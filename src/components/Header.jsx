@@ -17,14 +17,14 @@ import { useLocation } from "react-router-dom";
 /* Page title config */
 const pageTitle = (path) => {
   const map = {
-    "/": "Dashboard",
-    "/events": "Events",
-    "/users": "User List",
-    "/veneu": "Veneu",
-    "/categories": "Categories",
-    "/user-roles": "User Roles",
-    "/settings/general": "General Settings",
-    "/settings/security": "Security Settings",
+    "/admin": "Dashboard",
+    "/admin/events": "Events",
+    "/admin/users": "User List",
+    "/admin/venue": "Venue",
+    "/admin/categories": "Categories",
+    "/admin/user-roles": "User Roles",
+    "/admin/settings/general": "General Settings",
+    "/admin/settings/security": "Security Settings",
   };
   return map[path] || "Dashboard";
 };
@@ -56,7 +56,8 @@ export default function Header({ dark, setDark, toggleSidebar }) {
             px: 2,
             borderRadius: 2,
             width: 300,
-          }}>
+          }}
+        >
           <SearchIcon fontSize="small" />
           <InputBase placeholder="Search…" sx={{ ml: 1, flex: 1 }} />
         </Box>
