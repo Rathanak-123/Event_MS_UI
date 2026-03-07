@@ -7,7 +7,9 @@ import Events from "../pages/Events";
 import Users from "../pages/Users";
 import UserRoles from "../pages/UserRoles";
 import Venue from "../pages/Venue";
-import Category from "../pages/category/Category";
+import CategoryList from "../pages/admin/category/CategoryList";
+import EditCategory from "../pages/admin/category/EditCategory";
+import CategoryDetail from "../pages/admin/category/CategoryDetail";
 import Tickets from "../pages/Tickets";
 import General from "../pages/General";
 import Security from "../pages/Security";
@@ -27,7 +29,11 @@ export default function AdminRouter({ dark, setDark }) {
           <Route path="users" element={<Users />} />
           <Route path="user-roles" element={<UserRoles />} />
           <Route path="venue" element={<Venue />} />
-          <Route path="categories" element={<Category />} />
+          <Route path="categories" element={<CategoryList />}>
+            <Route path="add" element={<EditCategory />} />
+            <Route path="edit/:id" element={<EditCategory />} />
+            <Route path=":id" element={<CategoryDetail />} />
+          </Route>
           <Route path="tickets" element={<Tickets />} />
 
           <Route path="settings">
