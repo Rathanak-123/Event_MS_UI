@@ -1,16 +1,4 @@
-import { Routes, Route } from "react-router-dom";
-import DashboardLayout from "./layouts/DashboardLayout";
-import Dashboard from "./pages/Dashboard";
-import Events from "./pages/Events";
-import Users from "./pages/Users";
-import UserRoles from "./pages/UserRoles";
-import General from "./pages/General";
-import Security from "./pages/Security";
-import Login from "./pages/Login";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import Venue from "./pages/Venue";
-import Category from "./pages/Categories";
-import Tickets from "./pages/Tickets";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function Router({ dark, setDark }) {
   return (
