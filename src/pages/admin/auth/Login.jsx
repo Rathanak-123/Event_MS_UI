@@ -38,7 +38,7 @@ export default function Login() {
     setLoading(false);
 
     if (result.success) {
-      navigate("/", { replace: true }); // replace: true → cleaner history
+      navigate("/admin", { replace: true }); // replace: true → cleaner history
     } else {
       setError(result.error || "Login failed. Please try again.");
     }
@@ -52,7 +52,8 @@ export default function Login() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-        }}>
+        }}
+      >
         <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
           <LockOutlinedIcon />
         </Avatar>
@@ -70,7 +71,8 @@ export default function Login() {
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{ mt: 3, width: "100%" }}>
+          sx={{ mt: 3, width: "100%" }}
+        >
           <TextField
             margin="normal"
             required
@@ -116,7 +118,8 @@ export default function Login() {
               textTransform: "none",
               fontSize: "1.1rem",
             }}
-            disabled={loading}>
+            disabled={loading}
+          >
             {loading ? (
               <>
                 <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />
@@ -146,7 +149,8 @@ export default function Login() {
         variant="body2"
         color="text.secondary"
         align="center"
-        sx={{ mt: 8, mb: 4 }}>
+        sx={{ mt: 8, mb: 4 }}
+      >
         © {new Date().getFullYear()} Your Company — All rights reserved.
       </Typography>
     </Container>

@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminLayout from "../layouts/AdminLayout";
-import Login from "../pages/Login";
+import Login from "../pages/admin/auth/Login";
 import Dashboard from "../pages/Dashboard";
 import Events from "../pages/Events";
 import Users from "../pages/Users";
@@ -15,11 +15,11 @@ import Security from "../pages/Security";
 export default function AdminRouter({ dark, setDark }) {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route path="login" element={<Login />} />
 
       <Route element={<ProtectedRoute />}>
         <Route
-          path="/admin"
+          path="admin"
           element={<AdminLayout dark={dark} setDark={setDark} />}
         >
           <Route index element={<Dashboard />} />

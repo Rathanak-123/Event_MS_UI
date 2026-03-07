@@ -6,7 +6,7 @@ export default function ClientRouter() {
     <Routes>
       <Route element={<ClientLayout />}>
         <Route
-          path="/"
+          path=""
           element={
             <div style={{ padding: "20px", textAlign: "center" }}>
               <h1>Client Home Page</h1>
