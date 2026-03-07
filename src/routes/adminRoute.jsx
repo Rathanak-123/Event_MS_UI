@@ -7,7 +7,7 @@ import Events from "../pages/Events";
 import Users from "../pages/Users";
 import UserRoles from "../pages/UserRoles";
 import Venue from "../pages/Venue";
-import Category from "../pages/Categories";
+import Category from "../pages/category/Category";
 import Tickets from "../pages/Tickets";
 import General from "../pages/General";
 import Security from "../pages/Security";

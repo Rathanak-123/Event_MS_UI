@@ -20,8 +20,8 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin123@gmail.com");
+  const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
