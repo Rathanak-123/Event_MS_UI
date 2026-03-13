@@ -1,18 +1,18 @@
 import axiosInstance from "./repuest.js";
 
-const BASE = "/categories/";
+const BASE = "/tickets/";
 
-export const getAllCategories = async () => {
+export const getAllTickets = async () => {
   try {
     const response = await axiosInstance.get(BASE);
     return response.data.data || [];
   } catch (error) {
-    console.error("Get categories failed:", error);
+    console.error("Get tickets failed:", error);
     throw error;
   }
 };
 
-export const getPaginatedCategories = async ({
+export const getPaginatedTickets = async ({
   page = 1,
   limit = 10,
   sort_by = "id",
@@ -21,7 +21,7 @@ export const getPaginatedCategories = async ({
   filters = {},
 }) => {
   try {
-    const response = await axiosInstance.post(`${BASE}paginate/`, {
+    const response = await axiosInstance.post(`${BASE}piganate`, {
       page,
       limit,
       sort_by,
@@ -32,37 +32,37 @@ export const getPaginatedCategories = async ({
 
     return response.data.data;
   } catch (error) {
-    console.error("Get paginated categories failed:", error);
+    console.error("Get paginated tickets failed:", error);
     throw error;
   }
 };
 
-export const createCategory = async (categoriesData) => {
+export const createTicket = async (ticketData) => {
   try {
-    const response = await axiosInstance.post(BASE, categoriesData);
+    const response = await axiosInstance.post(BASE, ticketData);
     return response.data.data;
   } catch (error) {
-    console.error("Create category failed:", error);
+    console.error("Create ticket failed:", error);
     throw error;
   }
 };
 
-export const updateCategory = async (id, categoriesData) => {
+export const updateTicket = async (id, ticketData) => {
   try {
-    const response = await axiosInstance.put(`${BASE}${id}/`, categoriesData);
+    const response = await axiosInstance.put(`${BASE}${id}/`, ticketData);
     return response.data.data;
   } catch (error) {
-    console.error("Update category failed:", error);
+    console.error("Update ticket failed:", error);
     throw error;
   }
 };
 
-export const deleteCategory = async (id) => {
+export const deleteTicket = async (id) => {
   try {
     const response = await axiosInstance.delete(`${BASE}${id}/`);
     return response.data;
   } catch (error) {
-    console.error("Delete category failed:", error);
+    console.error("Delete ticket failed:", error?.response?.data || error);
     throw error;
   }
 };

@@ -1,4 +1,4 @@
-import axiosInstance from "./repuest";
+import axiosInstance from "./repuest.js";
 
 const BASE = "/events/";
 
@@ -12,32 +12,91 @@ export const getAllEvents = async () => {
   }
 };
 
-export const createEvents = async (data) => {
+export const getPaginatedEvents = async ({
+  page = 1,
+  limit = 10,
+  sort_by = "id",
+  sort_order = "asc",
+  search = "",
+  filters = {},
+}) => {
   try {
-    const payload = {
-      ...data,
-      category_id: Number(data.category_id), // ← FIXED
-      venue_id: Number(data.venue_id),
-    };
-    const response = await axiosInstance.post(BASE, payload);
-    return response.data.data;
+    const response = await axiosInstance.post(`${BASE}paginate/`, {
+      page,
+      limit,
+      sort_by,
+      sort_order,
+      search,
+      filters,
+    });
+    console.log("event pagianted data:", response?.data?.data);
+    return response?.data?.data;
   } catch (error) {
-    console.error("Create Event Error", error.response?.data || error);
+    console.error("Get paginated events failed:", error);
     throw error;
   }
 };
 
-export const updateEvents = async (id, data) => {
+export const createEvent = async (eventData) => {
   try {
-    const response = await axiosInstance.put(`${BASE}${id}/`, data);
+    const formData = new FormData();
+
+    Object.keys(eventData).forEach((key) => {
+      if (
+        eventData[key] !== null &&
+        eventData[key] !== undefined &&
+        eventData[key] !== ""
+      ) {
+        formData.append(key, eventData[key]);
+      }
+    });
+
+    const response = await axiosInstance.post(BASE, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
     return response.data.data;
   } catch (error) {
-    console.error("Update failed", error);
+    console.error("Create event failed:", error);
     throw error;
   }
 };
 
-export const deleteEvents = async (id) => {
-  const response = await axiosInstance.delete(`${BASE}${id}/`);
-  return response.data.data;
+export const updateEvent = async (id, eventData) => {
+  try {
+    const formData = new FormData();
+
+    Object.keys(eventData).forEach((key) => {
+      if (
+        eventData[key] !== null &&
+        eventData[key] !== undefined &&
+        eventData[key] !== ""
+      ) {
+        formData.append(key, eventData[key]);
+      }
+    });
+
+    const response = await axiosInstance.put(`${BASE}${id}/`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data.data;
+  } catch (error) {
+    console.error("Update event failed:", error);
+    throw error;
+  }
+};
+
+export const deleteEvent = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`${BASE}${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete event failed:", error?.response?.data || error);
+    throw error;
+  }
 };

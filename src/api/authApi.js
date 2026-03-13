@@ -1,8 +1,10 @@
 import axiosInstance from "./repuest";
+
 export const login = async (credentials) => {
   const response = await axiosInstance.post("/auth/login/", credentials);
   return response.data;
 };
+
 export const refreshToken = async () => {
   const refresh = localStorage.getItem("refreshToken");
   if (!refresh) throw new Error("No refresh token");
@@ -11,8 +13,14 @@ export const refreshToken = async () => {
   return response.data;
 };
 
-export const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  // optional: call /auth/logout/ if backend supports it
+export const logout = async () => {
+  try {
+    await axiosInstance.post("/auth/logout/");
+  } catch (error) {
+    console.error("Logout API failed:", error);
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+  }
 };
