@@ -1,4 +1,4 @@
-import axiosInstance from "./repuest.js";
+import axiosInstance from "./request.js";
 
 const BASE = "/venue/";
 
@@ -41,14 +41,17 @@ export const createVenue = async (venueData) => {
     const response = await axiosInstance.post(BASE, venueData);
     return response.data.data;
   } catch (error) {
-    console.error("Create venue failed:", error);
+    if (error.response?.data) {
+      alert("API Validation Error:\n" + JSON.stringify(error.response.data, null, 2));
+    }
+    console.error("Create venue failed:", error.response?.data || error);
     throw error;
   }
 };
 
-export const updateVenue = async (venueId, venueData) => {
+export const updateVenue = async (venue_id, venueData) => {
   try {
-    const response = await axiosInstance.put(`${BASE}${venueId}/`, venueData);
+    const response = await axiosInstance.put(`${BASE}${venue_id}/`, venueData);
     return response.data.data;
   } catch (error) {
     console.error("Update venue failed:", error);
@@ -56,9 +59,9 @@ export const updateVenue = async (venueId, venueData) => {
   }
 };
 
-export const deleteVenue = async (venueId) => {
+export const deleteVenue = async (venue_id) => {
   try {
-    const response = await axiosInstance.delete(`${BASE}${venueId}/`);
+    const response = await axiosInstance.delete(`${BASE}${venue_id}/`);
     return response.data;
   } catch (error) {
     console.error("Delete venue failed:", error?.response?.data || error);

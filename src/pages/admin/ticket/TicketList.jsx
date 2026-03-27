@@ -275,9 +275,6 @@ export default function TicketList() {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <strong>ID</strong>
-                    </TableCell>
-                    <TableCell>
                       <strong>Event</strong>
                     </TableCell>
                     <TableCell>
@@ -301,8 +298,7 @@ export default function TicketList() {
                 <TableBody>
                   {tickets.map((ticket) => (
                     <TableRow key={ticket.id} hover>
-                      <TableCell>{ticket.id}</TableCell>
-                      <TableCell>{getEventName(ticket.event_id)}</TableCell>
+                      <TableCell>{ticket.event?.event_name || "—"}</TableCell>
                       <TableCell>{ticket.ticket_type || "—"}</TableCell>
                       <TableCell>{ticket.price || "—"}</TableCell>
                       <TableCell>{ticket.quantity ?? "—"}</TableCell>
@@ -326,7 +322,7 @@ export default function TicketList() {
 
                   {!loading && tickets.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={7} align="center">
+                      <TableCell colSpan={6} align="center">
                         No tickets found
                       </TableCell>
                     </TableRow>

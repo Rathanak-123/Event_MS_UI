@@ -13,13 +13,13 @@ import {
   MenuItem,
 } from "@mui/material";
 import {
-  createBooking,
+  createAdminBooking,
   updateBooking,
   getAllBookings,
 } from "../../../api/booking.api";
-import { getAllEvents } from "../../../api/event.api";
+import { getAllEvents } from "../../../api/events.api";
 import { getAllTickets } from "../../../api/ticket.api";
-import { getAllUsers } from "../../../api/user.api";
+import { getAllCustomers } from "../../../api/customer.api";
 
 export default function EditBooking() {
   const { id } = useParams();
@@ -28,12 +28,12 @@ export default function EditBooking() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
 
-  const [users, setUsers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [events, setEvents] = useState([]);
   const [tickets, setTickets] = useState([]);
 
   const [formData, setFormData] = useState({
-    user: "",
+    customer: "",
     event: "",
     ticket: "",
     quantity: "",
@@ -56,13 +56,13 @@ export default function EditBooking() {
 
   const fetchDropdownData = async () => {
     try {
-      const [userData, eventData, ticketData] = await Promise.all([
-        getAllUsers(),
+      const [customerData, eventData, ticketData] = await Promise.all([
+        getAllCustomers(),
         getAllEvents(),
         getAllTickets(),
       ]);
 
-      setUsers(Array.isArray(userData) ? userData : []);
+      setCustomers(Array.isArray(customerData) ? customerData : []);
       setEvents(Array.isArray(eventData) ? eventData : []);
       setTickets(Array.isArray(ticketData) ? ticketData : []);
     } catch (error) {
@@ -78,9 +78,9 @@ export default function EditBooking() {
 
       if (found) {
         setFormData({
-          user: found.user?.id || "",
-          event: found.event?.id || "",
-          ticket: found.ticket?.id || "",
+          customer: typeof found.customer === 'object' ? found.customer?.id : found.customer || "",
+          event: typeof found.event === 'object' ? found.event?.id : found.event || "",
+          ticket: typeof found.ticket === 'object' ? found.ticket?.id : found.ticket || "",
           quantity: found.quantity ?? "",
           total_amount: found.total_amount || "",
           status: found.status || "pending",
@@ -107,45 +107,87 @@ export default function EditBooking() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        name === "user" ||
-        name === "event" ||
-        name === "ticket" ||
-        name === "quantity"
+    setFormData((prev) => {
+      const parsedValue =
+        name === "customer" || name === "event" || name === "ticket" || name === "quantity"
           ? value === ""
             ? ""
             : Number(value)
-          : value,
-    }));
+          : value;
+
+      const newData = { ...prev, [name]: parsedValue };
+
+      // When event changes, reset ticket & filter tickets by event
+      if (name === "event") {
+        newData.ticket = "";
+        newData.total_amount = "";
+        const eventTickets = tickets.filter(
+          (t) => t.event === parsedValue || t.event?.id === parsedValue || t.event_id === parsedValue
+        );
+
+        // Auto-select ticket if only 1 exists for the event
+        if (eventTickets.length === 1) {
+          newData.ticket = eventTickets[0].id;
+          const qtyToUse = newData.quantity || 1;
+          if (!newData.quantity) newData.quantity = 1;
+          newData.total_amount = String(eventTickets[0].price * qtyToUse);
+        }
+      }
+
+      if (name === "ticket" || name === "quantity") {
+        const selectedTicketId = name === "ticket" ? parsedValue : (newData.ticket !== undefined ? newData.ticket : prev.ticket);
+        let selectedQty = name === "quantity" ? parsedValue : (newData.quantity !== undefined ? newData.quantity : prev.quantity);
+        
+        if (name === "ticket" && !selectedQty) {
+            selectedQty = 1;
+            newData.quantity = 1;
+        }
+
+        if (selectedTicketId && selectedQty) {
+          const ticketObj = tickets.find((t) => t.id === selectedTicketId);
+          if (ticketObj) {
+            newData.total_amount = String(ticketObj.price * selectedQty);
+          }
+        }
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = async () => {
     setLoading(true);
 
     try {
-      const payload = {
-        user: Number(formData.user),
-        event: Number(formData.event),
-        ticket: Number(formData.ticket),
-        quantity: Number(formData.quantity),
-        total_amount: formData.total_amount,
-        status: formData.status,
-      };
-
       if (id) {
+        // Update uses the full payload
+        const payload = {
+          customer: Number(formData.customer),
+          event: Number(formData.event),
+          ticket: Number(formData.ticket),
+          quantity: Number(formData.quantity),
+          total_amount: String(formData.total_amount),
+          status: formData.status,
+        };
         await updateBooking(id, payload);
         showSnackbar("Booking updated successfully!");
       } else {
-        await createBooking(payload);
+        // Admin create only needs these 4 fields
+        const payload = {
+          event: Number(formData.event),
+          ticket: Number(formData.ticket),
+          quantity: Number(formData.quantity),
+          customer: Number(formData.customer),
+        };
+        await createAdminBooking(payload);
         showSnackbar("Booking added successfully!");
       }
 
       setTimeout(() => navigate("/admin/bookings"), 1000);
     } catch (error) {
       console.error(error);
-      showSnackbar("Operation failed", "error");
+      const msg = error?.response?.data?.detail || error?.response?.data?.message || "Operation failed";
+      showSnackbar(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -166,16 +208,16 @@ export default function EditBooking() {
           <>
             <TextField
               select
-              label="User"
-              name="user"
+              label="Customer"
+              name="customer"
               fullWidth
               margin="normal"
-              value={formData.user}
+              value={formData.customer}
               onChange={handleInputChange}
               required>
-              {users.map((user) => (
-                <MenuItem key={user.id} value={user.id}>
-                  {user.email}
+              {customers.map((c) => (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.email || c.username || c.name || `Customer ${c.id}`}
                 </MenuItem>
               ))}
             </TextField>
@@ -204,12 +246,21 @@ export default function EditBooking() {
               margin="normal"
               value={formData.ticket}
               onChange={handleInputChange}
+              disabled={!formData.event}
+              helperText={!formData.event ? "Select an event first" : ""}
               required>
-              {tickets.map((ticket) => (
-                <MenuItem key={ticket.id} value={ticket.id}>
-                  {ticket.ticket_type} ({ticket.price})
-                </MenuItem>
-              ))}
+              {tickets
+                .filter(
+                  (t) =>
+                    t.event === formData.event ||
+                    t.event?.id === formData.event ||
+                    t.event_id === formData.event
+                )
+                .map((ticket) => (
+                  <MenuItem key={ticket.id} value={ticket.id}>
+                    {ticket.ticket_type} (${ticket.price})
+                  </MenuItem>
+                ))}
             </TextField>
 
             <TextField
@@ -220,33 +271,37 @@ export default function EditBooking() {
               margin="normal"
               value={formData.quantity}
               onChange={handleInputChange}
+              inputProps={{ min: 1 }}
               required
             />
 
-            <TextField
-              label="Total Amount"
-              name="total_amount"
-              fullWidth
-              margin="normal"
-              value={formData.total_amount}
-              onChange={handleInputChange}
-              required
-            />
+            {formData.total_amount && (
+              <TextField
+                label="Total Amount (auto-calculated)"
+                name="total_amount"
+                fullWidth
+                margin="normal"
+                value={formData.total_amount}
+                InputProps={{ readOnly: true }}
+              />
+            )}
 
-            <TextField
-              select
-              label="Status"
-              name="status"
-              fullWidth
-              margin="normal"
-              value={formData.status}
-              onChange={handleInputChange}
-              required>
-              <MenuItem value="pending">pending</MenuItem>
-              <MenuItem value="confirmed">confirmed</MenuItem>
-              <MenuItem value="paid">paid</MenuItem>
-              <MenuItem value="cancelled">cancelled</MenuItem>
-            </TextField>
+            {id && (
+              <TextField
+                select
+                label="Status"
+                name="status"
+                fullWidth
+                margin="normal"
+                value={formData.status}
+                onChange={handleInputChange}
+                required>
+                <MenuItem value="pending">Pending</MenuItem>
+                <MenuItem value="confirmed">Confirmed</MenuItem>
+                <MenuItem value="paid">Paid</MenuItem>
+                <MenuItem value="cancelled">Cancelled</MenuItem>
+              </TextField>
+            )}
           </>
         )}
       </DialogContent>
@@ -259,12 +314,11 @@ export default function EditBooking() {
           disabled={
             loading ||
             fetching ||
-            !formData.user ||
+            !formData.customer ||
             !formData.event ||
             !formData.ticket ||
             formData.quantity === "" ||
-            !formData.total_amount ||
-            !formData.status
+            (id && (!formData.total_amount || !formData.status))
           }>
           {loading ? "Saving..." : "Save"}
         </Button>

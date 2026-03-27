@@ -1,4 +1,4 @@
-import axiosInstance from "./repuest.js";
+import axiosInstance from "./request.js";
 
 const BASE = "/events/";
 
@@ -97,6 +97,15 @@ export const deleteEvent = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Delete event failed:", error?.response?.data || error);
+    throw error;
+  }
+};
+export const getEventById = async (id) => {
+  try {
+    const response = await axiosInstance.get(`${BASE}${id}/`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Get event by ID failed:", error);
     throw error;
   }
 };

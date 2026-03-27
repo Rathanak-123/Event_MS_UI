@@ -24,7 +24,8 @@ import {
 import { Search, Visibility, Edit, Delete, Refresh } from "@mui/icons-material";
 import { getPaginatedEvents, deleteEvent } from "../../../api/events.api";
 
-const IMAGE_BASE_URL = import.meta.env.VITE_UPLOAD_URL;
+import { getImageUrl } from "../../../utils/imageUtils";
+
 
 export default function EventList() {
   const navigate = useNavigate();
@@ -61,15 +62,7 @@ export default function EventList() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const getImageSrc = (imagePath) => {
-    if (!imagePath) return "";
 
-    if (imagePath.startsWith("http")) {
-      return imagePath;
-    }
-
-    return `${IMAGE_BASE_URL}${imagePath.replace(/^uploads\//, "")}`;
-  };
 
   const fetchEvents = async (
     customPage = page,
@@ -302,10 +295,19 @@ export default function EventList() {
                         {event.image ? (
                           <Box
                             component="img"
-                            src={getImageSrc(event.image)}
+                            src={getImageUrl(
+                              typeof event.image === "string"
+                                ? event.image
+                                : event.image?.url || event.image?.path || ""
+                            )}
                             alt={event.event_name}
                             onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = "";
                               e.currentTarget.style.display = "none";
+                              if (e.currentTarget.parentElement) {
+                                e.currentTarget.parentElement.textContent = "—";
+                              }
                             }}
                             sx={{
                               width: 60,

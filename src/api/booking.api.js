@@ -1,4 +1,4 @@
-import axiosInstance from "./repuest.js";
+import axiosInstance from "./request.js";
 
 const BASE = "/bookings/";
 
@@ -21,14 +21,16 @@ export const getPaginatedBookings = async ({
   filters = {},
 }) => {
   try {
-    const response = await axiosInstance.post(`${BASE}paginate/`, {
+    const payload = {
       page,
       limit,
       sort_by,
       sort_order,
       search,
       filters,
-    });
+    };
+
+    const response = await axiosInstance.post(`${BASE}paginate/`, payload);
 
     return response.data.data;
   } catch (error) {
@@ -43,6 +45,16 @@ export const createBooking = async (bookingData) => {
     return response.data.data;
   } catch (error) {
     console.error("Create booking failed:", error);
+    throw error;
+  }
+};
+
+export const createAdminBooking = async (bookingData) => {
+  try {
+    const response = await axiosInstance.post(`${BASE}admin/`, bookingData);
+    return response.data.data || response.data;
+  } catch (error) {
+    console.error("Admin create booking failed:", error);
     throw error;
   }
 };

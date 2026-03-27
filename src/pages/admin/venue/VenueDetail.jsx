@@ -16,7 +16,7 @@ import {
 import { getAllVenues } from "../../../api/venue.api";
 
 export default function VenueDetail() {
-  const { id } = useParams();
+  const { venue_id } = useParams();
   const navigate = useNavigate();
   const [venue, setVenue] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,16 +28,16 @@ export default function VenueDetail() {
   });
 
   useEffect(() => {
-    if (id) {
+    if (venue_id) {
       fetchVenue();
     }
-  }, [id]);
+  }, [venue_id]);
 
   const fetchVenue = async () => {
     setLoading(true);
     try {
       const venues = await getAllVenues();
-      const foundVenue = venues.find((v) => v.venue_id === parseInt(id));
+      const foundVenue = venues.find((v) => v.venue_id === parseInt(venue_id));
 
       if (foundVenue) {
         setVenue(foundVenue);

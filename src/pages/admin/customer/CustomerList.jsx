@@ -20,22 +20,26 @@ import {
   Alert,
   TablePagination,
   Stack,
+  Avatar,
+  Chip,
 } from "@mui/material";
 import { Search, Visibility, Edit, Delete, Refresh } from "@mui/icons-material";
-import { getAllBookings, deleteBooking } from "../../../api/booking.api";
+import { getPaginatedCustomers, deleteCustomer } from "../../../api/customer.api";
 
-export default function BookingList() {
+import { getImageUrl } from "../../../utils/imageUtils";
+
+
+export default function CustomerList() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [allBookings, setAllBookings] = useState([]);
-  const [bookings, setBookings] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [sortBy, setSortBy] = useState("id");
+  const [sortBy, setSortBy] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
 
   const [page, setPage] = useState(0);
@@ -49,111 +53,79 @@ export default function BookingList() {
   });
 
   const showSnackbar = (message, severity = "success") => {
-    setSnackbar({ open: true, message, severity });
+    setSnackbar({
+      open: true,
+      message,
+      severity,
+    });
   };
 
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const getCustomerLabel = (booking) => {
-    if (booking?.customer && typeof booking.customer === 'object') {
-      return (
-        booking.customer.email ||
-        booking.customer.username ||
-        booking.customer.full_name ||
-        `Customer ID: ${booking.customer.id ?? "—"}`
-      );
-    }
-    return booking?.customer ? `Customer ID: ${booking.customer}` : "—";
-  };
 
-  const getEventLabel = (booking) => {
-    if (booking?.event && typeof booking.event === 'object') {
-      return booking.event.event_name || `Event ID: ${booking.event.id ?? "—"}`;
-    }
-    return booking?.event ? `Event ID: ${booking.event}` : "—";
-  };
 
-  const getTicketLabel = (booking) => {
-    if (!booking?.ticket) return "—";
-    if (typeof booking.ticket === 'object') {
-      return `${booking.ticket.ticket_type || "Ticket"} (${booking.ticket.price || "—"})`;
-    }
-    return `Ticket ID: ${booking.ticket}`;
-  };
-
-  const fetchBookings = async () => {
+  const fetchCustomers = async (
+    customPage = page,
+    customRowsPerPage = rowsPerPage,
+    customSearch = searchTerm,
+    customSortBy = sortBy,
+    customSortOrder = sortOrder,
+  ) => {
     setLoading(true);
     try {
-      const data = await getAllBookings();
-      const items = Array.isArray(data) ? data : (data?.data || []);
-      setAllBookings(items);
+      const data = await getPaginatedCustomers({
+        page: customPage + 1,
+        limit: customRowsPerPage,
+        sort_by: customSortBy,
+        sort_order: customSortOrder,
+        search: customSearch,
+        filters: {},
+      });
+
+      const items = Array.isArray(data) ? data : (data?.items || data?.results || data?.data || []);
+      const total =
+        data?.total || data?.count || data?.total_items || (Array.isArray(data) ? data.length : items.length) || 0;
+
+      setCustomers(Array.isArray(items) ? items : []);
+      setTotalRows(total);
     } catch (error) {
       console.error(error);
-      setAllBookings([]);
-      showSnackbar("Failed to load bookings", "error");
+      setCustomers([]);
+      setTotalRows(0);
+      showSnackbar("Failed to load customers", "error");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBookings();
-  }, [location.pathname]);
-
-  useEffect(() => {
-    let filtered = [...allBookings];
-
-    if (searchTerm) {
-      const lowerTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(b => 
-        String(b.id).includes(lowerTerm) ||
-        String(b.customer?.email || "").toLowerCase().includes(lowerTerm) ||
-        String(b.customer?.username || "").toLowerCase().includes(lowerTerm) ||
-        String(b.customer?.first_name || "").toLowerCase().includes(lowerTerm) ||
-        String(b.event?.event_name || "").toLowerCase().includes(lowerTerm) ||
-        String(b.status || "").toLowerCase().includes(lowerTerm)
-      );
-    }
-
-    filtered.sort((a, b) => {
-      let valA = a[sortBy];
-      let valB = b[sortBy];
-
-      if (sortBy === "customer") valA = a.customer?.email || "";
-      if (sortBy === "event") valA = a.event?.event_name || "";
-
-      if (valA < valB) return sortOrder === "asc" ? -1 : 1;
-      if (valA > valB) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    setTotalRows(filtered.length);
-    setBookings(filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage));
-  }, [allBookings, searchTerm, sortBy, sortOrder, page, rowsPerPage]);
+    fetchCustomers();
+  }, [location.pathname, page, rowsPerPage]);
 
   const handleSearch = () => {
     setPage(0);
     setSearchTerm(searchInput);
+    fetchCustomers(0, rowsPerPage, searchInput, sortBy, sortOrder);
   };
 
   const handleReset = () => {
     setSearchInput("");
     setSearchTerm("");
-    setSortBy("id");
+    setSortBy("first_name");
     setSortOrder("asc");
     setPage(0);
+    fetchCustomers(0, rowsPerPage, "", "first_name", "asc");
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this booking?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this customer?")) return;
 
     try {
-      await deleteBooking(id);
-      setAllBookings((prev) => prev.filter((booking) => booking.id !== id));
-      showSnackbar("Booking deleted successfully");
+      await deleteCustomer(id);
+      setCustomers((prev) => prev.filter((cust) => cust.id !== id));
+      showSnackbar("Customer deleted successfully");
     } catch (error) {
       console.error("Delete failed:", error?.response?.data || error);
       showSnackbar("Delete failed", "error");
@@ -171,19 +143,23 @@ export default function BookingList() {
   };
 
   const handleSortByChange = (e) => {
-    setSortBy(e.target.value);
+    const value = e.target.value;
+    setSortBy(value);
     setPage(0);
+    fetchCustomers(0, rowsPerPage, searchTerm, value, sortOrder);
   };
 
   const handleSortOrderChange = (e) => {
-    setSortOrder(e.target.value);
+    const value = e.target.value;
+    setSortOrder(value);
     setPage(0);
+    fetchCustomers(0, rowsPerPage, searchTerm, sortBy, value);
   };
 
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Booking Management
+        Customer Management
       </Typography>
 
       <Paper
@@ -206,7 +182,7 @@ export default function BookingList() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Search booking..."
+              placeholder="Search customer..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -228,11 +204,11 @@ export default function BookingList() {
               value={sortBy}
               onChange={handleSortByChange}
               sx={{ minWidth: 170 }}>
+              <MenuItem value="first_name">First Name</MenuItem>
+              <MenuItem value="last_name">Last Name</MenuItem>
               <MenuItem value="id">ID</MenuItem>
-              <MenuItem value="quantity">Quantity</MenuItem>
-              <MenuItem value="total_amount">Total Amount</MenuItem>
+              <MenuItem value="email">Email</MenuItem>
               <MenuItem value="status">Status</MenuItem>
-              <MenuItem value="booking_date">Booking Date</MenuItem>
             </TextField>
 
             <TextField
@@ -263,7 +239,7 @@ export default function BookingList() {
           </Stack>
 
           <Button variant="contained" onClick={() => navigate("add")}>
-            Add Booking
+            Add Customer
           </Button>
         </Stack>
       </Paper>
@@ -275,7 +251,7 @@ export default function BookingList() {
           border: "1px solid #eaeaea",
           overflow: "hidden",
         }}>
-        {loading && bookings.length === 0 ? (
+        {loading && customers.length === 0 ? (
           <Box display="flex" justifyContent="center" py={6}>
             <CircularProgress />
           </Box>
@@ -289,19 +265,19 @@ export default function BookingList() {
                       <strong>ID</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Customer</strong>
+                      <strong>Picture</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Event</strong>
+                      <strong>First Name</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Ticket</strong>
+                      <strong>Last Name</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Quantity</strong>
+                      <strong>Email</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Total Amount</strong>
+                      <strong>Role</strong>
                     </TableCell>
                     <TableCell>
                       <strong>Status</strong>
@@ -313,36 +289,58 @@ export default function BookingList() {
                 </TableHead>
 
                 <TableBody>
-                  {bookings.map((booking) => (
-                    <TableRow key={booking.id} hover>
-                      <TableCell>{booking.id}</TableCell>
-                      <TableCell>{getCustomerLabel(booking)}</TableCell>
-                      <TableCell>{getEventLabel(booking)}</TableCell>
-                      <TableCell>{getTicketLabel(booking)}</TableCell>
-                      <TableCell>{booking.quantity ?? "—"}</TableCell>
-                      <TableCell>{booking.total_amount || "—"}</TableCell>
-                      <TableCell>{booking.status || "—"}</TableCell>
+                  {customers.map((customer) => (
+                    <TableRow key={customer.id} hover>
+                      <TableCell>{customer.id}</TableCell>
+
+                      <TableCell>
+                        <Avatar
+                          src={getImageUrl(customer.picture)}
+
+                          alt={customer.first_name}
+                          sx={{ width: 40, height: 40 }}
+                        />
+                      </TableCell>
+
+                      <TableCell>{customer.first_name || "—"}</TableCell>
+                      <TableCell>{customer.last_name || "—"}</TableCell>
+                      <TableCell>{customer.email || "—"}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={customer.role?.display_name || customer.role?.name || "User"}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={customer.status ? "Active" : "Inactive"}
+                          size="small"
+                          color={customer.status ? "success" : "default"}
+                        />
+                      </TableCell>
+
                       <TableCell align="center">
-                        <IconButton onClick={() => navigate(`${booking.id}`)}>
+                        <IconButton onClick={() => navigate(`${customer.id}`)}>
                           <Visibility color="info" />
                         </IconButton>
 
-                        <IconButton
-                          onClick={() => navigate(`edit/${booking.id}`)}>
+                        <IconButton onClick={() => navigate(`edit/${customer.id}`)}>
                           <Edit color="primary" />
                         </IconButton>
 
-                        <IconButton onClick={() => handleDelete(booking.id)}>
+                        <IconButton onClick={() => handleDelete(customer.id)}>
                           <Delete color="error" />
                         </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}
 
-                  {!loading && bookings.length === 0 && (
+                  {!loading && customers.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={8} align="center">
-                        No bookings found
+                        No customers found
                       </TableCell>
                     </TableRow>
                   )}

@@ -25,7 +25,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { signIn } = useAuth();
+  const { signIn, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -33,12 +33,20 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    const result = await signIn(email.trim(), password);
+    const result = await signIn(email.trim(), password, 'admin');
 
     setLoading(false);
 
     if (result.success) {
-      navigate("/admin", { replace: true }); // replace: true → cleaner history
+      const roleName = result.user?.role?.name?.toLowerCase() || result.user?.role?.toLowerCase() || '';
+      const isAdmin = roleName === 'admin' || roleName === 'super admin' || result.user?.is_superuser || result.user?.is_staff;
+      
+      if (isAdmin) {
+        navigate("/admin", { replace: true });
+      } else {
+        signOut('admin');
+        setError("Access Denied: You do not have admin privileges.");
+      }
     } else {
       setError(result.error || "Login failed. Please try again.");
     }

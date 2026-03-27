@@ -127,7 +127,7 @@ export default function Sidebar({ open }) {
             <ListItemButton
               sx={{ pl: 4 }}
               component={NavLink}
-              to="/admin/user-roles">
+              to="/admin/customer">
               <ListItemIcon>
                 <PersonIcon />
               </ListItemIcon>

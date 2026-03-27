@@ -1,4 +1,4 @@
-import axiosInstance from "./repuest.js";
+import axiosInstance from "./request.js";
 
 const BASE = "/tickets/";
 
@@ -21,7 +21,7 @@ export const getPaginatedTickets = async ({
   filters = {},
 }) => {
   try {
-    const response = await axiosInstance.post(`${BASE}piganate`, {
+    const response = await axiosInstance.post(`${BASE}paginate/`, {
       page,
       limit,
       sort_by,

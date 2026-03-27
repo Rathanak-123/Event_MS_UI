@@ -10,14 +10,21 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Box,
 } from "@mui/material";
-import { createVenue, updateVenue, getAllVenues } from "../../../api/venue.api";
+import {
+  createVenue,
+  updateVenue,
+  getAllVenues,
+} from "../../../api/venue.api";
 
 export default function EditVenue() {
-  const { id } = useParams();
+  const { venue_id } = useParams();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -32,27 +39,30 @@ export default function EditVenue() {
   });
 
   useEffect(() => {
-    if (id) {
+    if (venue_id) {
       fetchVenue();
     }
-  }, [id]);
+  }, [venue_id]);
 
   const fetchVenue = async () => {
     setFetching(true);
     try {
       const venues = await getAllVenues();
-      const venue = venues.find((v) => v.venue_id === parseInt(id));
+
+      const venue = venues.find(
+        (v) => v.venue_id === Number(venue_id)
+      );
 
       if (venue) {
         setFormData({
           name: venue.name || "",
           address: venue.address || "",
-          capacity: venue.capacity || "",
+          capacity: venue.capacity ?? "",
           contact_info: venue.contact_info || "",
         });
       } else {
         showSnackbar("Venue not found", "error");
-        setTimeout(() => navigate("/admin/Venue"), 2000);
+        setTimeout(() => navigate("/admin/venue"), 1500);
       }
     } catch (error) {
       showSnackbar("Failed to fetch venue", "error");
@@ -66,11 +76,12 @@ export default function EditVenue() {
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: name === "capacity" ? value.replace(/\D/g, "") : value,
@@ -79,37 +90,47 @@ export default function EditVenue() {
 
   const handleSubmit = async () => {
     setLoading(true);
+
     try {
       const payload = {
         ...formData,
         capacity: Number(formData.capacity),
+        venue_id: venue_id ? Number(venue_id) : 0,
       };
 
-      if (id) {
-        await updateVenue(id, payload);
+      if (venue_id) {
+        await updateVenue(venue_id, payload); 
         showSnackbar("Venue updated successfully!");
       } else {
         await createVenue(payload);
         showSnackbar("Venue added successfully!");
       }
-      setTimeout(() => navigate("/admin/Venue"), 1000);
+
+      setTimeout(() => navigate("/admin/venue"), 1000);
     } catch (error) {
-      showSnackbar("Operation failed", "error");
+      console.error(error);
+      const errMsg = error.response?.data?.detail || error.response?.data?.message || "Operation failed";
+      showSnackbar(typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg), "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    navigate("/admin/Venue");
+    navigate("/admin/venue");
   };
 
   return (
     <Dialog open={true} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>{id ? "Update Venue" : "Add Venue"}</DialogTitle>
+      <DialogTitle>
+        {venue_id ? "Update Venue" : "Add Venue"}
+      </DialogTitle>
+
       <DialogContent>
         {fetching ? (
-          <CircularProgress />
+          <Box display="flex" justifyContent="center" py={3}>
+            <CircularProgress />
+          </Box>
         ) : (
           <>
             <TextField
@@ -167,7 +188,8 @@ export default function EditVenue() {
             !formData.name.trim() ||
             !formData.address.trim() ||
             !formData.capacity
-          }>
+          }
+        >
           {loading ? "Saving..." : "Save"}
         </Button>
       </DialogActions>
@@ -176,11 +198,13 @@ export default function EditVenue() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          variant="filled">
+          variant="filled"
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

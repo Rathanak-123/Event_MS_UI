@@ -15,6 +15,12 @@ import TicketDetail from "../pages/admin/ticket/TicketDetail";
 import CategoryList from "../pages/admin/category/CategoryList";
 import EditCategory from "../pages/admin/category/EditCategory";
 import CategoryDetail from "../pages/admin/category/CategoryDetail";
+import BookingList from "../pages/admin/booking/BookingList";
+import EditBooking from "../pages/admin/booking/EditBooking";
+import BookingDetail from "../pages/admin/booking/BookingDetail";
+import CustomerList from "../pages/admin/customer/CustomerList";
+import EditCustomer from "../pages/admin/customer/EditCustomer";
+import CustomerDetail from "../pages/admin/customer/CustomerDetail";
 
 export default function AdminRouter({ dark, setDark }) {
   return (
@@ -23,13 +29,15 @@ export default function AdminRouter({ dark, setDark }) {
 
       <Route element={<ProtectedRoute />}>
         <Route
-          path="admin"
+          path=""
           element={<AdminLayout dark={dark} setDark={setDark} />}>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           {/* VENUE ROUTES */}
           <Route path="venue" element={<VenueList />}>
             <Route path="add" element={<EditVenue />} />
-            <Route path="edit/:id" element={<EditVenue />} />
-            <Route path=":id" element={<VenueDetail />} />
+            <Route path="edit/:venue_id" element={<EditVenue />} />
+            <Route path=":venue_id" element={<VenueDetail />} />
           </Route>
 
           <Route path="events" element={<EventList />}>
@@ -49,6 +57,21 @@ export default function AdminRouter({ dark, setDark }) {
             <Route path="add" element={<EditCategory />} />
             <Route path="edit/:id" element={<EditCategory />} />
             <Route path=":id" element={<CategoryDetail />} />
+          </Route>
+
+          {/* BOOKING ROUTES */}
+          <Route path="bookings" element={<BookingList />}>
+            <Route path="add" element={<EditBooking />} />
+            <Route path="edit/:id" element={<EditBooking />} />
+            <Route path=":id" element={<BookingDetail />} />
+          </Route>
+
+          {/* CUSTOMER ROUTES */}
+      
+          <Route path="customer" element={<CustomerList />}>
+            <Route path="add" element={<EditCustomer />} />
+            <Route path="edit/:id" element={<EditCustomer />} />
+            <Route path=":id" element={<CustomerDetail />} />
           </Route>
         </Route>
       </Route>

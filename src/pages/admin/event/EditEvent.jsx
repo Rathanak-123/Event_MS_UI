@@ -18,11 +18,12 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
-import { createEvent, updateEvent, getAllEvents } from "../../../api/events.api";
+import { createEvent, updateEvent, getEventById } from "../../../api/events.api";
 import { getAllCategories } from "../../../api/category.api";
 import { getAllVenues } from "../../../api/venue.api";
 
-const IMAGE_BASE_URL = "http://localhost:8000/";
+import { getImageUrl } from "../../../utils/imageUtils";
+
 
 export default function EditEvent() {
   const { id } = useParams();
@@ -61,10 +62,7 @@ export default function EditEvent() {
     if (id) fetchEvent();
   }, [id]);
 
-  const getImageSrc = (path) => {
-    if (!path) return "";
-    return path.startsWith("http") ? path : `${IMAGE_BASE_URL}${path}`;
-  };
+
 
   const fetchDropdownData = async () => {
     try {
@@ -82,10 +80,19 @@ export default function EditEvent() {
   const fetchEvent = async () => {
     setFetching(true);
     try {
-      const events = await getAllEvents();
-      const found = events.find((item) => item.id === parseInt(id));
+      const found = await getEventById(id);
 
       if (found) {
+        // Handle nested category/venue objects from backend
+        const categoryId = found.category_id || found.category?.id || "";
+        const venueId = found.venue_id || found.venue?.venue_id || "";
+
+        // Handle image as string or object
+        const imagePath =
+          typeof found.image === "string"
+            ? found.image
+            : found.image?.url || found.image?.path || "";
+
         setFormData({
           event_name: found.event_name || "",
           description: found.description || "",
@@ -94,12 +101,12 @@ export default function EditEvent() {
           start_time: found.start_time || "",
           end_time: found.end_time || "",
           organizer: found.organizer || "",
-          category_id: found.category_id || "",
-          venue_id: found.venue_id || "",
+          category_id: categoryId,
+          venue_id: venueId,
           image: null,
           status: found.status || "upcoming",
         });
-        setExistingImage(found.image || "");
+        setExistingImage(imagePath);
       } else {
         showSnackbar("Event not found", "error");
         setTimeout(() => navigate("/admin/events"), 1200);
@@ -183,7 +190,8 @@ export default function EditEvent() {
   };
 
   const previewSrc =
-    imagePreview || (existingImage ? getImageSrc(existingImage) : "");
+    imagePreview || (existingImage ? getImageUrl(existingImage) : "");
+
 
   return (
     <Dialog open onClose={handleClose} fullWidth maxWidth="lg">

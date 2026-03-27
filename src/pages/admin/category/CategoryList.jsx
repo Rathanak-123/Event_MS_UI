@@ -91,19 +91,20 @@ export default function CategoryList() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this category?")) {
-      return;
-    }
+ const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this category?")) return;
 
-    try {
-      await deleteCategory(id);
-      showSnackbar("Category deleted successfully!");
-      fetchCategories();
-    } catch (error) {
-      showSnackbar("Delete failed", "error");
-    }
-  };
+  try {
+    await deleteCategory(id);
+    setCategories((prev) =>
+      prev.filter((category) => category.id !== id)
+    );
+    showSnackbar("Category deleted successfully!");
+    fetchCategories();
+  } catch (error) {
+    showSnackbar("Delete failed", "error");
+  }
+};
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);

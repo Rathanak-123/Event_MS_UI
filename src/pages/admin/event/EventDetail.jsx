@@ -16,19 +16,16 @@ import {
   Chip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { getAllEvents } from "../../../api/events.api";
-import { getAllCategories } from "../../../api/category.api";
-import { getAllVenues } from "../../../api/venue.api";
+import { getEventById } from "../../../api/events.api";
 
-const IMAGE_BASE_URL = "http://localhost:8000/";
+import { getImageUrl } from "../../../utils/imageUtils";
+
 
 export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [event, setEvent] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [snackbar, setSnackbar] = useState({
@@ -41,26 +38,14 @@ export default function EventDetail() {
     if (id) fetchDetail();
   }, [id]);
 
-  const getImageSrc = (path) => {
-    if (!path) return "";
-    return path.startsWith("http") ? path : `${IMAGE_BASE_URL}${path}`;
-  };
+
 
   const fetchDetail = async () => {
     setLoading(true);
     try {
-      const [events, categoryData, venueData] = await Promise.all([
-        getAllEvents(),
-        getAllCategories(),
-        getAllVenues(),
-      ]);
-
-      const found = events.find((item) => item.id === parseInt(id));
-
-      if (found) {
-        setEvent(found);
-        setCategories(Array.isArray(categoryData) ? categoryData : []);
-        setVenues(Array.isArray(venueData) ? venueData : []);
+      const data = await getEventById(id);
+      if (data) {
+        setEvent(data);
       } else {
         showSnackbar("Event not found", "error");
         setTimeout(() => navigate("/admin/events"), 1200);
@@ -70,16 +55,6 @@ export default function EventDetail() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getCategoryName = (categoryId) => {
-    const found = categories.find((item) => item.id === categoryId);
-    return found?.category_name || `ID: ${categoryId}`;
-  };
-
-  const getVenueName = (venueId) => {
-    const found = venues.find((item) => item.venue_id === venueId);
-    return found?.name || `Venue ID: ${venueId}`;
   };
 
   const showSnackbar = (message, severity = "success") => {
@@ -130,7 +105,8 @@ export default function EventDetail() {
                 {event.image ? (
                   <Box
                     component="img"
-                    src={getImageSrc(event.image)}
+                    src={getImageUrl(event.image)}
+
                     alt={event.event_name}
                     sx={{
                       width: "100%",
@@ -225,7 +201,7 @@ export default function EventDetail() {
                     Category
                   </Typography>
                   <Typography variant="body1">
-                    {getCategoryName(event.category_id)}
+                    {event.category?.category_name || "—"}
                   </Typography>
                 </Grid>
 
@@ -234,7 +210,7 @@ export default function EventDetail() {
                     Venue
                   </Typography>
                   <Typography variant="body1">
-                    {getVenueName(event.venue_id)}
+                    {event.venue?.name || "—"}
                   </Typography>
                 </Grid>
 

@@ -1,4 +1,4 @@
-import axiosInstance from "./repuest.js";
+import axiosInstance from "./request.js";
 
 const BASE = "/categories/";
 

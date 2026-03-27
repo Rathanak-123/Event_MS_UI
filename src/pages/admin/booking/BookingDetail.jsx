@@ -77,21 +77,23 @@ export default function BookingDetail() {
         ) : booking ? (
           <Box sx={{ mt: 1 }}>
             <Typography variant="overline" color="text.secondary">
-              User
+              Customer
             </Typography>
             <Typography variant="h6" gutterBottom>
-              {booking.user?.email || booking.user?.username || "—"}
+              {typeof booking.customer === 'object'
+                ? (booking.customer?.email || booking.customer?.username || "—")
+                : (booking.customer ? `Customer ID: ${booking.customer}` : "—")}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="overline" color="text.secondary">
-              User Role
+              Customer Role
             </Typography>
             <Typography variant="body1">
-              {booking.user?.role?.display_name ||
-                booking.user?.role?.name ||
-                "—"}
+              {typeof booking.customer === 'object'
+                ? (booking.customer?.role?.display_name || booking.customer?.role?.name || "—")
+                : "—"}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
@@ -100,7 +102,7 @@ export default function BookingDetail() {
               Event
             </Typography>
             <Typography variant="body1">
-              {booking.event?.event_name || "—"}
+              {typeof booking.event === 'object' ? (booking.event?.event_name || "—") : (booking.event ? `Event ID: ${booking.event}` : "—")}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
@@ -109,7 +111,7 @@ export default function BookingDetail() {
               Event Date
             </Typography>
             <Typography variant="body1">
-              {booking.event?.event_date || "—"}
+              {typeof booking.event === 'object' ? (booking.event?.event_date || "—") : "—"}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
@@ -118,7 +120,7 @@ export default function BookingDetail() {
               Ticket
             </Typography>
             <Typography variant="body1">
-              {booking.ticket?.ticket_type || "—"}
+              {typeof booking.ticket === 'object' ? (booking.ticket?.ticket_type || "—") : (booking.ticket ? `Ticket ID: ${booking.ticket}` : "—")}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
@@ -127,7 +129,7 @@ export default function BookingDetail() {
               Ticket Price
             </Typography>
             <Typography variant="body1">
-              {booking.ticket?.price || "—"}
+              {typeof booking.ticket === 'object' ? (booking.ticket?.price || "—") : "—"}
             </Typography>
 
             <Divider sx={{ my: 2 }} />
