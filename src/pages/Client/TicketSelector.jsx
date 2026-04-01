@@ -26,7 +26,13 @@ const TicketSelector = ({ tickets = [], selectedTickets = {}, onQuantityChange }
       <Stack spacing={2}>
         {tickets.map((ticket) => {
           const quantity = selectedTickets[ticket.id] || 0;
-          const isSoldOut = ticket.available_quantity <= 0;
+          
+          // Calculate true available quantity by subtracting sold tickets
+          const totalQty = ticket.quantity ?? 100;
+          const soldQty = ticket.sold ?? 0;
+          const availableQty = ticket.available_quantity ?? Math.max(0, totalQty - soldQty);
+          
+          const isSoldOut = availableQty <= 0;
 
           return (
             <Paper
@@ -49,7 +55,7 @@ const TicketSelector = ({ tickets = [], selectedTickets = {}, onQuantityChange }
                     {ticket.description || 'General Admission'}
                   </Typography>
                   <Typography variant="h6" color="primary.main" sx={{ mt: 1, fontWeight: 800 }}>
-                    ${ticket.price}
+                    ${Number(ticket.price).toFixed(2)}
                   </Typography>
                 </Box>
 
@@ -75,8 +81,8 @@ const TicketSelector = ({ tickets = [], selectedTickets = {}, onQuantityChange }
                       
                       <IconButton 
                         size="small" 
-                        onClick={() => onQuantityChange(ticket.id, Math.min(ticket.available_quantity, quantity + 1))}
-                        disabled={quantity >= ticket.available_quantity}
+                        onClick={() => onQuantityChange(ticket.id, Math.min(availableQty, quantity + 1))}
+                        disabled={quantity >= availableQty}
                         sx={{ border: '1px solid', borderColor: 'divider', color: 'primary.main' }}
                       >
                         <AddIcon fontSize="small" />
@@ -84,7 +90,7 @@ const TicketSelector = ({ tickets = [], selectedTickets = {}, onQuantityChange }
                     </Stack>
                   )}
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                    {ticket.available_quantity} remaining
+                    {availableQty} remaining {soldQty > 0 && `(${soldQty} sold)`}
                   </Typography>
                 </Box>
               </Box>

@@ -24,14 +24,17 @@ import {
   VisibilityOff as VisibilityOffIcon,
   Google as GoogleIcon
 } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { signup } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 
 const SignupPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const { signInWithGoogle } = useAuth();
+  
+  const returnUrl = location.state?.returnUrl || '/';
   
   const [formData, setFormData] = useState({
     name: '',
@@ -69,7 +72,7 @@ const SignupPage = () => {
     try {
       const result = await signInWithGoogle(response.credential);
       if (result.success) {
-        navigate('/');
+        navigate(returnUrl);
       } else {
         setError(result.error || 'Google signup failed');
       }
@@ -100,7 +103,7 @@ const SignupPage = () => {
         password: formData.password
       });
       if (response) {
-        navigate('/login');
+        navigate('/login', { state: { returnUrl } });
       }
     } catch (err) {
       console.error(err);
@@ -246,7 +249,7 @@ const SignupPage = () => {
 
               <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
                 Already have an account?{' '}
-                <MuiLink component={Link} to="/login" sx={{ fontWeight: 800, textDecoration: 'none' }}>
+                <MuiLink component={Link} to="/login" state={{ returnUrl }} sx={{ fontWeight: 800, textDecoration: 'none' }}>
                   Log in
                 </MuiLink>
               </Typography>

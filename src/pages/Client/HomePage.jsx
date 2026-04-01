@@ -122,18 +122,7 @@ const HomePage = () => {
       <Grid container spacing={3}>
         {items.map((event) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
-            <EventCard 
-                event={{
-                    id: event.id,
-                    title: event.event_name || event.title || event.name,
-                    date: event.event_date || new Date(event.start_date || event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                    location: event.venue?.name || event.venue_name || "Location TBD",
-                    price: event.price > 0 ? `$${event.price}` : "Free",
-                    category: event.category?.category_name || event.category_name || "General",
-                    image: event.image
-
-                }} 
-            />
+            <EventCard event={event} />
           </Grid>
         ))}
       </Grid>

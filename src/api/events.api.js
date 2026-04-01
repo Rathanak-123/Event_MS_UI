@@ -103,9 +103,11 @@ export const deleteEvent = async (id) => {
 export const getEventById = async (id) => {
   try {
     const response = await axiosInstance.get(`${BASE}${id}/`);
-    return response.data.data;
+    return response.data?.data || response.data;
   } catch (error) {
-    console.error("Get event by ID failed:", error);
+    if (error?.response?.status !== 403 && error?.response?.status !== 401) {
+      console.error("Get event by ID failed:", error);
+    }
     throw error;
   }
 };

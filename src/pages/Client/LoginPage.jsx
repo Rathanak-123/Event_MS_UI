@@ -207,7 +207,7 @@ const LoginPage = () => {
 
               <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
                 Don't have an account?{' '}
-                <MuiLink component={Link} to="/signup" sx={{ fontWeight: 800, textDecoration: 'none' }}>
+                <MuiLink component={Link} to="/signup" state={{ returnUrl }} sx={{ fontWeight: 800, textDecoration: 'none' }}>
                   Sign up free
                 </MuiLink>
               </Typography>

@@ -84,8 +84,8 @@ const EventDetailPage = () => {
 
   const handleBookNow = () => {
     if (!isAuthenticated) {
-      setSnackbar({ open: true, message: 'Please login to book tickets', severity: 'warning' });
-      setTimeout(() => navigate('/login', { state: { returnUrl: `/event/${id}` } }), 1500);
+      setSnackbar({ open: true, message: 'Please sign up to book tickets', severity: 'warning' });
+      setTimeout(() => navigate('/signup', { state: { returnUrl: `/event/${id}` } }), 1500);
       return;
     }
     
@@ -261,28 +261,42 @@ const EventDetailPage = () => {
               <Paper 
                 elevation={0} 
                 sx={{ 
-                    p: 4, 
-                    borderRadius: 6, 
-                    border: '1px solid', 
-                    borderColor: 'divider',
-                    boxShadow: '0 30px 60px rgba(0,0,0,0.06)',
-                    bgcolor: 'background.paper'
+                    p: { xs: 3, md: 4 }, 
+                    borderRadius: "20px", 
+                    border: '1px solid #f0f0f0', 
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+                    bgcolor: '#ffffff'
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Booking Summary</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 900, mb: 3, color: '#001A33', letterSpacing: '-0.5px' }}>
+                  Checkout
+                </Typography>
                 
+                <Typography variant="caption" sx={{ fontWeight: 800, color: '#8292a1', letterSpacing: '0.8px', textTransform: 'uppercase', display: 'block', mb: 0.5 }}>
+                  EVENT SUMMARY
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#001A33', mb: 2, lineHeight: 1.3 }}>
+                  {event.event_name || event.title || event.name}
+                </Typography>
+
+                <Divider sx={{ mb: 2, borderColor: '#f4f5f7' }} />
+
                 {totalSelected > 0 ? (
                   <Stack spacing={2} sx={{ mb: 3 }}>
                     {tickets.filter(t => selectedTickets[t.id] > 0).map(t => (
-                      <Box key={t.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">{t.name} x {selectedTickets[t.id]}</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }}>${(t.price * selectedTickets[t.id]).toFixed(2)}</Typography>
+                      <Box key={t.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ color: '#64748b' }}>
+                          {t.name} <Typography component="span" sx={{ color: '#001A33', fontWeight: 800 }}>x {selectedTickets[t.id]}</Typography>
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 900, color: '#001A33' }}>
+                          ${(t.price * selectedTickets[t.id]).toFixed(2)}
+                        </Typography>
                       </Box>
                     ))}
-                    <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Total</Typography>
-                      <Typography variant="h5" sx={{ fontWeight: 900, color: 'primary.main' }}>
+                    <Divider sx={{ borderColor: '#f4f5f7' }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pt: 1, pb: 1 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#001A33' }}>Total Price</Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 900, color: '#13795B', letterSpacing: '-1px' }}>
                         ${Object.keys(selectedTickets).reduce((sum, id) => {
                           const ticket = tickets.find(t => t.id === parseInt(id));
                           return sum + (ticket ? ticket.price * selectedTickets[id] : 0);
@@ -291,8 +305,8 @@ const EventDetailPage = () => {
                     </Box>
                   </Stack>
                 ) : (
-                  <Box sx={{ mb: 4, p: 3, bgcolor: alpha(theme.palette.text.primary, 0.02), borderRadius: 3, textAlign: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">Select your tickets to continue</Typography>
+                  <Box sx={{ mb: 4, py: 3, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>Select tickets on the left to see your total.</Typography>
                   </Box>
                 )}
 
@@ -303,19 +317,26 @@ const EventDetailPage = () => {
                     disabled={totalSelected === 0}
                     onClick={handleBookNow}
                     sx={{ 
-                        borderRadius: 4, 
-                        py: 2.5, 
-                        fontWeight: 900,
-                        fontSize: '1.1rem',
-                        boxShadow: '0 10px 25px rgba(15, 118, 110, 0.3)'
+                        bgcolor: '#13795B',
+                        color: '#ffffff',
+                        borderRadius: "14px", 
+                        py: 2, 
+                        fontWeight: 800,
+                        fontSize: '1.05rem',
+                        textTransform: 'none',
+                        boxShadow: 'none',
+                        '&:hover': {
+                            bgcolor: '#0e6047',
+                            boxShadow: '0 8px 20px rgba(19, 121, 91, 0.25)'
+                        },
+                        '&.Mui-disabled': {
+                            bgcolor: '#e2e8f0',
+                            color: '#94a3b8'
+                        }
                     }}
                 >
-                    Book Now
+                    Book Ticket
                 </Button>
-                
-                <Typography variant="caption" sx={{ display: 'block', mt: 3, textAlign: 'center', color: 'text.secondary', fontWeight: 500 }}>
-                  * All purchases are subject to terms & conditions
-                </Typography>
               </Paper>
 
               <Stack direction="row" spacing={2}>
