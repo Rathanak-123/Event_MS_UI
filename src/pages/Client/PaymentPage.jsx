@@ -39,9 +39,16 @@ const PaymentPage = () => {
     const fetchQR = async () => {
       setLoading(true);
       try {
-        const data = await generateKHQR(bookingId);
-        // Assuming the API returns the QR string or image URL
-        setQrData(data?.qr_data || data?.qr_code || '');
+        const data = await generateKHQR(bookingId, totalAmount);
+        // Handle various backend response shapes including nested 'data'
+        const img = 
+          data?.data?.qr_image || 
+          data?.qr_image || 
+          data?.data?.qr_data || 
+          data?.qr_data || 
+          data?.data?.qr_code || 
+          data?.qr_code;
+        setQrData(img || '');
       } catch (err) {
         console.error(err);
         setError("Failed to generate payment QR. Please try again or contact support.");

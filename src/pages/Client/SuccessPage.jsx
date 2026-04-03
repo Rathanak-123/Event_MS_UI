@@ -18,6 +18,7 @@ import {
   Home as HomeIcon
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { downloadTicket } from '../../api/booking.api';
 
 const SuccessPage = () => {
   const theme = useTheme();
@@ -28,6 +29,23 @@ const SuccessPage = () => {
     totalAmount = 0, 
     eventName = 'Event' 
   } = location.state || {};
+
+  const handleDownloadTicket = async () => {
+    if (bookingId === 'N/A') return;
+    try {
+        const blob = await downloadTicket(bookingId);
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Ticket-${bookingId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+    } catch (error) {
+        console.error("Failed to download ticket:", error);
+        alert("E-Ticket not available yet. Please check again in 'My Bookings'.");
+    }
+  };
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pt: 12, pb: 10 }}>
@@ -116,6 +134,7 @@ const SuccessPage = () => {
                     variant="contained" 
                     size="large" 
                     fullWidth
+                    onClick={handleDownloadTicket}
                     startIcon={<DownloadIcon />}
                     sx={{ 
                         borderRadius: 4, 

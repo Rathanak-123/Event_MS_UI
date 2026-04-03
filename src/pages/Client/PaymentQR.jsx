@@ -52,8 +52,8 @@ const PaymentQR = ({ qrData = '', amount = 0, bookingId = '', loading = false })
       <Box sx={{ 
         position: 'relative', 
         mx: 'auto', 
-        width: 240, 
-        height: 240, 
+        width: 400, 
+        height: 400, 
         p: 2, 
         bgcolor: 'white', 
         borderRadius: 4, 
@@ -65,11 +65,11 @@ const PaymentQR = ({ qrData = '', amount = 0, bookingId = '', loading = false })
         mb: 4
       }}>
         {loading ? (
-          <CircularProgress color="primary" />
+          <CircularProgress color="primary" size={60} />
         ) : (
           <Box 
             component="img"
-            src={qrData || "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=KHQR_PAYMENT_DEMO"}
+            src={qrData || "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=KHQR_PAYMENT_DEMO"}
             alt="KHQR Code"
             sx={{ width: '100%', height: '100%', borderRadius: 2 }}
           />

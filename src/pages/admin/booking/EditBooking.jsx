@@ -159,26 +159,25 @@ export default function EditBooking() {
     setLoading(true);
 
     try {
+      // Build a robust payload bridging both naming conventions
+      const payload = {
+        customer: Number(formData.customer),
+        event: Number(formData.event),
+        ticket: Number(formData.ticket),
+        quantity: Number(formData.quantity),
+        total_amount: String(formData.total_amount || "0"),
+        status: formData.status || "pending",
+        
+        // Also provide _id suffixed variants for DRF
+        customer_id: Number(formData.customer),
+        event_id: Number(formData.event),
+        ticket_id: Number(formData.ticket),
+      };
+
       if (id) {
-        // Update uses the full payload
-        const payload = {
-          customer: Number(formData.customer),
-          event: Number(formData.event),
-          ticket: Number(formData.ticket),
-          quantity: Number(formData.quantity),
-          total_amount: String(formData.total_amount),
-          status: formData.status,
-        };
         await updateBooking(id, payload);
         showSnackbar("Booking updated successfully!");
       } else {
-        // Admin create only needs these 4 fields
-        const payload = {
-          event: Number(formData.event),
-          ticket: Number(formData.ticket),
-          quantity: Number(formData.quantity),
-          customer: Number(formData.customer),
-        };
         await createAdminBooking(payload);
         showSnackbar("Booking added successfully!");
       }
@@ -186,8 +185,23 @@ export default function EditBooking() {
       setTimeout(() => navigate("/admin/bookings"), 1000);
     } catch (error) {
       console.error(error);
-      const msg = error?.response?.data?.detail || error?.response?.data?.message || "Operation failed";
-      showSnackbar(msg, "error");
+      
+      let msg = error?.response?.data?.detail || error?.response?.data?.message;
+      
+      // Attempt to extract DRF field validation errors
+      if (!msg && error?.response?.data && typeof error.response.data === "object") {
+        const fields = Object.keys(error.response.data);
+        if (fields.length > 0) {
+          const firstFieldError = error.response.data[fields[0]];
+          if (Array.isArray(firstFieldError) && typeof firstFieldError[0] === "string") {
+            msg = `${fields[0]}: ${firstFieldError[0]}`;
+          } else if (typeof firstFieldError === "string") {
+            msg = `${fields[0]}: ${firstFieldError}`;
+          }
+        }
+      }
+      
+      showSnackbar(msg || "Operation failed", "error");
     } finally {
       setLoading(false);
     }

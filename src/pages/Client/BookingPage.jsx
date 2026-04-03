@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -26,12 +26,17 @@ import {
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getEventById } from '../../api/events.api';
 import { createBooking } from '../../api/booking.api';
+import { getPaginatedTickets } from '../../api/ticket.api';
+import { generateKHQR } from '../../api/payment.api';
+import BookingQRCode from './BookingQRCode';
+import { useAuth } from '../../context/AuthContext';
 
 const BookingPage = () => {
   const theme = useTheme();
   const { eventId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { clientUser } = useAuth();
   
   const { selectedTickets = {} } = location.state || {};
   
@@ -41,27 +46,46 @@ const BookingPage = () => {
   const [error, setError] = useState(null);
   
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
-    phone: '',
   });
 
+  // Auto-fill email from logged in profile
+  useEffect(() => {
+    const profileEmail = clientUser?.email || '';
+    if (profileEmail) {
+      setFormData(prev => ({ ...prev, email: profileEmail }));
+    }
+  }, [clientUser]);
+
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrData, setQrData] = useState(null);
+  const [createdBookingId, setCreatedBookingId] = useState(null);
+  const [bookingTotal, setBookingTotal] = useState(0);
+  const [paymentMd5, setPaymentMd5] = useState(null);
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getEventById(eventId);
-        setEvent(data);
+        const [eventData, ticketData] = await Promise.all([
+          getEventById(eventId),
+          getPaginatedTickets({ filters: { event_id: eventId }, limit: 100 })
+        ]);
+        
+        const rawEvent = eventData?.data || eventData;
+        const tickets = ticketData?.items || ticketData?.results || ticketData?.data || (Array.isArray(ticketData) ? ticketData : []);
+        
+        // Attach tickets to event so calculateTotal works
+        setEvent({ ...rawEvent, tickets });
       } catch (err) {
         console.error(err);
-        setError("Failed to load event details.");
+        setError("Failed to load booking details.");
       } finally {
         setLoading(false);
       }
     };
-    fetchEvent();
+    fetchData();
   }, [eventId]);
 
   const handleChange = (e) => {
@@ -87,25 +111,48 @@ const BookingPage = () => {
       const quantity = selectedTickets[primaryTicketId];
       
       const bookingData = {
-        event_id: parseInt(eventId),
-        ticket_id: parseInt(primaryTicketId),
+        event: parseInt(eventId),
+        ticket: parseInt(primaryTicketId),
         quantity: quantity,
-        total_amount: calculateTotal().toString(),
-        customer_name: `${formData.firstName} ${formData.lastName}`,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        status: 'Pending'
+        customer: clientUser?.id,
       };
 
       const response = await createBooking(bookingData);
       
-      // Navigate to payment
-      navigate(`/payment/${response.id}`, { 
-        state: { 
-            totalAmount: calculateTotal(),
-            eventName: event.event_name || event.title
-        } 
-      });
+      // Capture total synchronously before any async operations change state
+      const total = calculateTotal();
+      setBookingTotal(total);
+
+      const newBookingId = response.id || response.data?.id;
+      setCreatedBookingId(newBookingId);
+      setQrModalOpen(true);
+      setQrLoading(true);
+
+      // Attempt to load KHQR automatically
+      try {
+        const khqrRes = await generateKHQR(newBookingId, total);
+        
+        // Store MD5 for polling
+        const md5 = khqrRes?.data?.md5 || khqrRes?.md5 || khqrRes?.data?.md5_hash || khqrRes?.md5_hash;
+        setPaymentMd5(md5);
+
+        // Handle both nested and non-nested response shapes
+        const img =
+          khqrRes?.data?.qr_image ||
+          khqrRes?.qr_image ||
+          khqrRes?.data?.qr_code ||
+          khqrRes?.qr_code ||
+          khqrRes?.data?.qr_data ||
+          khqrRes?.qr_data;
+        setQrData(img || null);
+      } catch (err) {
+        console.error("Failed to generate QR:", err);
+        setQrData(null);
+        setSnackbar({ open: true, message: 'Could not fetch payment QR.', severity: 'warning' });
+      } finally {
+        setQrLoading(false);
+      }
+
     } catch (err) {
       console.error(err);
       setSnackbar({ open: true, message: 'Failed to create booking. Please try again.', severity: 'error' });
@@ -113,6 +160,36 @@ const BookingPage = () => {
       setSubmitting(false);
     }
   };
+
+  const handlePaymentSuccess = useCallback(() => {
+    setQrModalOpen(false);
+    setSnackbar({ 
+      open: true, 
+      message: 'Payment Successful! Your tickets are ready.', 
+      severity: 'success' 
+    });
+    // Navigate to success page or my bookings after a slight delay
+    setTimeout(() => {
+        navigate('/success', { 
+            state: { 
+                bookingId: createdBookingId, 
+                totalAmount: bookingTotal,
+                eventName: event?.event_name || event?.title
+            } 
+        });
+    }, 2000);
+  }, [createdBookingId, bookingTotal, event, navigate]);
+
+  const handleCloseQR = useCallback(() => {
+    setQrModalOpen(false);
+    // Optionally navigate away after scanning
+    navigate(`/payment/${createdBookingId}`, { 
+      state: { 
+          totalAmount: bookingTotal,
+          eventName: event?.event_name || event?.title
+      } 
+    });
+  }, [createdBookingId, bookingTotal, event, navigate]);
 
   if (loading) {
     return (
@@ -142,56 +219,24 @@ const BookingPage = () => {
               <Typography variant="h5" sx={{ fontWeight: 800, mb: 4 }}>Contact Information</Typography>
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField 
-                        fullWidth 
-                        label="First Name" 
-                        name="firstName"
-                        required
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        variant="outlined"
-                        InputProps={{ sx: { borderRadius: 3 } }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField 
-                        fullWidth 
-                        label="Last Name" 
-                        name="lastName"
-                        required
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        variant="outlined"
-                        InputProps={{ sx: { borderRadius: 3 } }}
-                    />
-                  </Grid>
                   <Grid item xs={12}>
                     <TextField 
                         fullWidth 
-                        label="Email Address" 
+                        label="Gmail Address" 
                         name="email"
                         type="email"
                         required
                         value={formData.email}
                         onChange={handleChange}
                         variant="outlined"
-                        InputProps={{ sx: { borderRadius: 3 } }}
+                        InputProps={{
+                          sx: { borderRadius: 3 },
+                          readOnly: !!clientUser?.email,
+                        }}
+                        helperText={clientUser?.email ? 'Auto-filled from your profile' : ''}
                     />
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField 
-                        fullWidth 
-                        label="Phone Number" 
-                        name="phone"
-                        required
-                        value={formData.phone}
-                        onChange={handleChange}
-                        variant="outlined"
-                        InputProps={{ sx: { borderRadius: 3 } }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sx={{ mt: 4 }}>
+                  <Grid item xs={12} sx={{ mt: 2 }}>
                     <Button 
                         type="submit" 
                         variant="contained" 
@@ -272,6 +317,18 @@ const BookingPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <BookingQRCode 
+        open={qrModalOpen}
+        onClose={handleCloseQR}
+        qrData={qrData}
+        amount={bookingTotal}
+        bookingId={createdBookingId}
+        md5={paymentMd5}
+        onSuccess={handlePaymentSuccess}
+        loading={qrLoading}
+        eventName={event?.event_name || event?.title}
+      />
     </Box>
   );
 };

@@ -78,3 +78,15 @@ export const deleteBooking = async (id) => {
     throw error;
   }
 };
+
+export const downloadTicket = async (id) => {
+  try {
+    const response = await axiosInstance.get(`${BASE}${id}/ticket/`, {
+      responseType: 'blob', // Important for handling binary PDF data
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Download ticket failed:", error);
+    throw error;
+  }
+};
