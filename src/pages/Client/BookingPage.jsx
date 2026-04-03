@@ -30,6 +30,8 @@ import { getPaginatedTickets } from '../../api/ticket.api';
 import { generateKHQR } from '../../api/payment.api';
 import BookingQRCode from './BookingQRCode';
 import { useAuth } from '../../context/AuthContext';
+import { generateEventTicket } from '../../api/eventTicket.api';
+
 
 const BookingPage = () => {
   const theme = useTheme();
@@ -161,20 +163,37 @@ const BookingPage = () => {
     }
   };
 
-  const handlePaymentSuccess = useCallback(() => {
+  const handlePaymentSuccess = useCallback(async () => {
     setQrModalOpen(false);
+    
+    // Automatically generate the event ticket upon payment success
+    try {
+        await generateEventTicket(createdBookingId);
+    } catch (err) {
+        console.error("Auto-generation of ticket failed:", err);
+        // We still proceed to success page as the booking is paid
+    }
+
     setSnackbar({ 
       open: true, 
       message: 'Payment Successful! Your tickets are ready.', 
       severity: 'success' 
     });
+
     // Navigate to success page or my bookings after a slight delay
     setTimeout(() => {
         navigate('/success', { 
             state: { 
                 bookingId: createdBookingId, 
                 totalAmount: bookingTotal,
-                eventName: event?.event_name || event?.title
+                eventName: event?.event_name || event?.title,
+                booking: {
+                    id: createdBookingId,
+                    event: event,
+                    customer: clientUser,
+                    total_amount: bookingTotal,
+                    status: 'Confirmed'
+                }
             } 
         });
     }, 2000);

@@ -17,18 +17,24 @@ import {
   ArrowForward as ArrowIcon,
   Home as HomeIcon
 } from '@mui/icons-material';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { downloadTicket } from '../../api/booking.api';
+import EventTicketModal from './EventTicketModal';
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 
 const SuccessPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { 
-    bookingId = 'N/A', 
+    bookingId = 'N/A',
     totalAmount = 0, 
-    eventName = 'Event' 
+    eventName = 'Event',
+    booking = null
   } = location.state || {};
+
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   const handleDownloadTicket = async () => {
     if (bookingId === 'N/A') return;
@@ -134,18 +140,38 @@ const SuccessPage = () => {
                     variant="contained" 
                     size="large" 
                     fullWidth
-                    onClick={handleDownloadTicket}
-                    startIcon={<DownloadIcon />}
+                    onClick={() => setIsTicketModalOpen(true)}
+                    startIcon={<TicketIcon />}
                     sx={{ 
                         borderRadius: 4, 
                         py: 2.5, 
                         fontWeight: 900,
                         fontSize: '1.1rem',
-                        boxShadow: '0 10px 25px rgba(15, 118, 110, 0.3)'
+                        boxShadow: '0 10px 25px rgba(15, 118, 110, 0.3)',
+                        mb: 2
                     }}
                 >
-                    Download E-Ticket
+                    View E-Ticket
                 </Button>
+
+                <Button 
+                    variant="outlined" 
+                    size="large" 
+                    fullWidth
+                    onClick={handleDownloadTicket}
+                    startIcon={<DownloadIcon />}
+                    sx={{ 
+                        borderRadius: 4, 
+                        py: 2, 
+                        fontWeight: 900,
+                        fontSize: '1rem',
+                        borderColor: 'divider',
+                        color: 'text.primary'
+                    }}
+                >
+                    Download PDF Ticket
+                </Button>
+
                 
                 <Stack direction="row" spacing={2}>
                     <Button 
@@ -171,7 +197,13 @@ const SuccessPage = () => {
           </Box>
         </Paper>
       </Container>
+      <EventTicketModal 
+        open={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        booking={booking || { id: bookingId, event: { event_name: eventName } }}
+      />
     </Box>
+
   );
 };
 

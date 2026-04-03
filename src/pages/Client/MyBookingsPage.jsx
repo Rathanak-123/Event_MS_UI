@@ -23,6 +23,8 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { getPaginatedBookings } from '../../api/booking.api';
 import { getImageUrl } from '../../utils/imageUtils';
+import EventTicketModal from './EventTicketModal';
+
 
 const MyBookingsPage = () => {
   const theme = useTheme();
@@ -31,8 +33,11 @@ const MyBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   const fetchBookings = async () => {
+
     setLoading(true);
     setError(null);
     try {
@@ -169,9 +174,14 @@ const MyBookingsPage = () => {
                             size="small" 
                             startIcon={<TicketIcon />}
                             sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}
+                            onClick={() => {
+                                setSelectedBooking(booking);
+                                setIsTicketModalOpen(true);
+                            }}
                         >
                             View Ticket
                         </Button>
+
                     </Stack>
                 </Grid>
               </Grid>
@@ -185,7 +195,13 @@ const MyBookingsPage = () => {
             <Button variant="text" sx={{ mt: 2, fontWeight: 700 }} onClick={() => window.location.href = '/'}>Browse Events</Button>
         </Box>
       )}
+      <EventTicketModal 
+        open={isTicketModalOpen}
+        onClose={() => setIsTicketModalOpen(false)}
+        booking={selectedBooking}
+      />
     </Container>
+
   );
 };
 
