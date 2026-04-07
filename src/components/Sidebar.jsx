@@ -96,7 +96,7 @@ export default function Sidebar({ open }) {
           </ListItemIcon>
           {open && <ListItemText primary="Booking" />}
         </ListItemButton>
-        <ListItemButton component={NavLink} to="/reports">
+        <ListItemButton component={NavLink} to="/admin/reports">
           <ListItemIcon>
             <SummarizeIcon />
           </ListItemIcon>

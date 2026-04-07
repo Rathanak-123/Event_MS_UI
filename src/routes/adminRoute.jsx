@@ -21,6 +21,7 @@ import BookingDetail from "../pages/admin/booking/BookingDetail";
 import CustomerList from "../pages/admin/customer/CustomerList";
 import EditCustomer from "../pages/admin/customer/EditCustomer";
 import CustomerDetail from "../pages/admin/customer/CustomerDetail";
+import ReportPage from "../pages/admin/report/ReportPage";
 
 export default function AdminRouter({ dark, setDark }) {
   return (
@@ -73,6 +74,8 @@ export default function AdminRouter({ dark, setDark }) {
             <Route path="edit/:id" element={<EditCustomer />} />
             <Route path=":id" element={<CustomerDetail />} />
           </Route>
+
+          <Route path="reports" element={<ReportPage />} />
         </Route>
       </Route>
 

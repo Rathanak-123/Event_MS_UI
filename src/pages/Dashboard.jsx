@@ -1,43 +1,93 @@
-import { Grid, Paper, Typography, Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Grid, Paper, Typography, Box, CircularProgress } from "@mui/material";
 import {
   AttachMoney,
   ShoppingCart,
   TrendingUp,
   Event,
 } from "@mui/icons-material";
-
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "$124,500",
-    change: "+15.2% vs last month",
-    color: "#22c55e",
-    icon: <AttachMoney />,
-  },
-  {
-    title: "Tickets Sold",
-    value: "8,420",
-    change: "+8.4% vs last month",
-    color: "#22c55e",
-    icon: <ShoppingCart />,
-  },
-  {
-    title: "Conversion Rate",
-    value: "12.5%",
-    change: "+1.2% vs last month",
-    color: "#22c55e",
-    icon: <TrendingUp />,
-  },
-  {
-    title: "Active Events",
-    value: "14",
-    change: "-2 events closed",
-    color: "#ef4444",
-    icon: <Event />,
-  },
-];
+import reportApi from "../api/report.api";
+import { getPaginatedEvents } from "../api/events.api";
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState([
+    { title: "Total Revenue", value: "$0", change: "Real-time", color: "#22c55e", icon: <AttachMoney /> },
+    { title: "Tickets Sold", value: "0", change: "Real-time", color: "#22c55e", icon: <ShoppingCart /> },
+    { title: "Avg. Attendance", value: "0%", change: "Real-time", color: "#22c55e", icon: <TrendingUp /> },
+    { title: "Active Events", value: "0", change: "Total registered", color: "#6366f1", icon: <Event /> },
+  ]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        // Fetch data for all stats
+        const [revenueRes, eventRes, attendanceRes] = await Promise.all([
+          reportApi.getRevenueReport({ page: 1, limit: 100 }),
+          getPaginatedEvents({ page: 1, limit: 1 }),
+          reportApi.getAttendanceReport({ page: 1, limit: 100 }),
+        ]);
+
+        const revenueItems = revenueRes.data?.items || [];
+        const totalRevenue = revenueItems.reduce((sum, item) => sum + parseFloat(item.total_revenue || 0), 0);
+        const totalTickets = revenueItems.reduce((sum, item) => sum + (item.total_tickets_sold || 0), 0);
+        
+        const attendanceItems = attendanceRes.data?.items || [];
+        const avgAttendance = attendanceItems.length > 0 
+          ? attendanceItems.reduce((sum, item) => sum + (item.attendance_rate || 0), 0) / attendanceItems.length 
+          : 0;
+
+        const totalEvents = eventRes.total || 0;
+
+        setStats([
+          {
+            title: "Total Revenue",
+            value: `$${totalRevenue.toLocaleString()}`,
+            change: "From all events",
+            color: "#22c55e",
+            icon: <AttachMoney />,
+          },
+          {
+            title: "Tickets Sold",
+            value: totalTickets.toLocaleString(),
+            change: "Across all bookings",
+            color: "#22c55e",
+            icon: <ShoppingCart />,
+          },
+          {
+            title: "Avg. Attendance",
+            value: `${avgAttendance.toFixed(1)}%`,
+            change: "Average show-up rate",
+            color: "#22c55e",
+            icon: <TrendingUp />,
+          },
+          {
+            title: "Active Events",
+            value: totalEvents.toString(),
+            change: "Total event count",
+            color: "#6366f1",
+            icon: <Event />,
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Grid container spacing={3}>
       {stats.map((item, index) => (
