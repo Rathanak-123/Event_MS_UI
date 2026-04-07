@@ -1,97 +1,105 @@
 import React, { useEffect, useState } from "react";
 import { Grid, Paper, Typography, Box, CircularProgress } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Grid, Paper, Typography, Box } from "@mui/material";
 import {
   AttachMoney,
-  ShoppingCart,
-  TrendingUp,
   Event,
+  CalendarToday,
+  BookOnline,
+  People,
+  LocalPlay
 } from "@mui/icons-material";
-import reportApi from "../api/report.api";
-import { getPaginatedEvents } from "../api/events.api";
+import { getAllEvents } from "../api/events.api";
+import { getAllBookings } from "../api/booking.api";
+import { getAllCustomers } from "../api/customer.api";
+import { getEventTickets } from "../api/eventTicket.api";
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState([
-    { title: "Total Revenue", value: "$0", change: "Real-time", color: "#22c55e", icon: <AttachMoney /> },
-    { title: "Tickets Sold", value: "0", change: "Real-time", color: "#22c55e", icon: <ShoppingCart /> },
-    { title: "Avg. Attendance", value: "0%", change: "Real-time", color: "#22c55e", icon: <TrendingUp /> },
-    { title: "Active Events", value: "0", change: "Total registered", color: "#6366f1", icon: <Event /> },
-  ]);
+  const [statsData, setStatsData] = useState({
+    totalEvents: 0,
+    upcomingEvents: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    totalCustomers: 0,
+    generatedTickets: 0,
+  });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      setLoading(true);
       try {
-        // Fetch data for all stats
-        const [revenueRes, eventRes, attendanceRes] = await Promise.all([
-          reportApi.getRevenueReport({ page: 1, limit: 100 }),
-          getPaginatedEvents({ page: 1, limit: 1 }),
-          reportApi.getAttendanceReport({ page: 1, limit: 100 }),
+        const [events, bookings, customers, tickets] = await Promise.all([
+          getAllEvents(),
+          getAllBookings(),
+          getAllCustomers(),
+          getEventTickets()
         ]);
-
-        const revenueItems = revenueRes.data?.items || [];
-        const totalRevenue = revenueItems.reduce((sum, item) => sum + parseFloat(item.total_revenue || 0), 0);
-        const totalTickets = revenueItems.reduce((sum, item) => sum + (item.total_tickets_sold || 0), 0);
         
-        const attendanceItems = attendanceRes.data?.items || [];
-        const avgAttendance = attendanceItems.length > 0 
-          ? attendanceItems.reduce((sum, item) => sum + (item.attendance_rate || 0), 0) / attendanceItems.length 
-          : 0;
-
-        const totalEvents = eventRes.total || 0;
-
-        setStats([
-          {
-            title: "Total Revenue",
-            value: `$${totalRevenue.toLocaleString()}`,
-            change: "From all events",
-            color: "#22c55e",
-            icon: <AttachMoney />,
-          },
-          {
-            title: "Tickets Sold",
-            value: totalTickets.toLocaleString(),
-            change: "Across all bookings",
-            color: "#22c55e",
-            icon: <ShoppingCart />,
-          },
-          {
-            title: "Avg. Attendance",
-            value: `${avgAttendance.toFixed(1)}%`,
-            change: "Average show-up rate",
-            color: "#22c55e",
-            icon: <TrendingUp />,
-          },
-          {
-            title: "Active Events",
-            value: totalEvents.toString(),
-            change: "Total event count",
-            color: "#6366f1",
-            icon: <Event />,
-          },
-        ]);
+        const totalEvents = events?.length || 0;
+        const upcomingEvents = events?.filter(e => {
+          const dateStr = e.date || e.start_date || e.start_time;
+          return dateStr ? new Date(dateStr) > new Date() : false;
+        }).length || 0;
+        
+        const totalBookings = bookings?.length || 0;
+        const totalRevenue = bookings?.reduce((sum, b) => sum + Number(b.total_price || b.total_amount || 0), 0) || 0;
+        const totalCustomers = customers?.length || 0;
+        const generatedTickets = tickets?.length || 0;
+        
+        setStatsData({
+          totalEvents,
+          upcomingEvents,
+          totalBookings,
+          totalRevenue,
+          totalCustomers,
+          generatedTickets
+        });
+        
       } catch (error) {
-        console.error("Failed to fetch dashboard stats:", error);
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch dashboard data:", error);
       }
     };
-
+    
     fetchDashboardData();
   }, []);
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="200px">
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const stats = [
+    {
+      title: "Total Events",
+      value: statsData.totalEvents.toString(),
+      icon: <Event />,
+    },
+    {
+      title: "Upcoming Events",
+      value: statsData.upcomingEvents.toString(),
+      icon: <CalendarToday />,
+    },
+    {
+      title: "Total Bookings",
+      value: statsData.totalBookings.toString(),
+      icon: <BookOnline />,
+    },
+    {
+      title: "Total Revenue",
+      value: `$${statsData.totalRevenue.toLocaleString()}`,
+      icon: <AttachMoney />,
+    },
+    {
+      title: "Total Customers",
+      value: statsData.totalCustomers.toString(),
+      icon: <People />,
+    },
+    {
+      title: "Generated Event Tickets",
+      value: statsData.generatedTickets.toString(),
+      icon: <LocalPlay />,
+    },
+  ];
 
   return (
     <Grid container spacing={3}>
       {stats.map((item, index) => (
-        <Grid item xs={12} md={3} key={index}>
+        <Grid item xs={12} md={4} key={index}>
           <Paper
             sx={{
               p: 3,
@@ -120,11 +128,6 @@ export default function Dashboard() {
             {/* Value */}
             <Typography variant="h4" sx={{ mt: 2, fontWeight: "bold" }}>
               {item.value}
-            </Typography>
-
-            {/* Change */}
-            <Typography variant="body2" sx={{ mt: 1, color: item.color }}>
-              {item.change}
             </Typography>
           </Paper>
         </Grid>
