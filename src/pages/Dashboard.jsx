@@ -1,47 +1,103 @@
+import React, { useState, useEffect } from "react";
 import { Grid, Paper, Typography, Box } from "@mui/material";
 import {
   AttachMoney,
-  ShoppingCart,
-  TrendingUp,
   Event,
+  CalendarToday,
+  BookOnline,
+  People,
+  LocalPlay
 } from "@mui/icons-material";
-
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "$124,500",
-    change: "+15.2% vs last month",
-    color: "#22c55e",
-    icon: <AttachMoney />,
-  },
-  {
-    title: "Tickets Sold",
-    value: "8,420",
-    change: "+8.4% vs last month",
-    color: "#22c55e",
-    icon: <ShoppingCart />,
-  },
-  {
-    title: "Conversion Rate",
-    value: "12.5%",
-    change: "+1.2% vs last month",
-    color: "#22c55e",
-    icon: <TrendingUp />,
-  },
-  {
-    title: "Active Events",
-    value: "14",
-    change: "-2 events closed",
-    color: "#ef4444",
-    icon: <Event />,
-  },
-];
+import { getAllEvents } from "../api/events.api";
+import { getAllBookings } from "../api/booking.api";
+import { getAllCustomers } from "../api/customer.api";
+import { getEventTickets } from "../api/eventTicket.api";
 
 export default function Dashboard() {
+  const [statsData, setStatsData] = useState({
+    totalEvents: 0,
+    upcomingEvents: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    totalCustomers: 0,
+    generatedTickets: 0,
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [events, bookings, customers, tickets] = await Promise.all([
+          getAllEvents(),
+          getAllBookings(),
+          getAllCustomers(),
+          getEventTickets()
+        ]);
+        
+        const totalEvents = events?.length || 0;
+        const upcomingEvents = events?.filter(e => {
+          const dateStr = e.date || e.start_date || e.start_time;
+          return dateStr ? new Date(dateStr) > new Date() : false;
+        }).length || 0;
+        
+        const totalBookings = bookings?.length || 0;
+        const totalRevenue = bookings?.reduce((sum, b) => sum + Number(b.total_price || b.total_amount || 0), 0) || 0;
+        const totalCustomers = customers?.length || 0;
+        const generatedTickets = tickets?.length || 0;
+        
+        setStatsData({
+          totalEvents,
+          upcomingEvents,
+          totalBookings,
+          totalRevenue,
+          totalCustomers,
+          generatedTickets
+        });
+        
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      }
+    };
+    
+    fetchDashboardData();
+  }, []);
+
+  const stats = [
+    {
+      title: "Total Events",
+      value: statsData.totalEvents.toString(),
+      icon: <Event />,
+    },
+    {
+      title: "Upcoming Events",
+      value: statsData.upcomingEvents.toString(),
+      icon: <CalendarToday />,
+    },
+    {
+      title: "Total Bookings",
+      value: statsData.totalBookings.toString(),
+      icon: <BookOnline />,
+    },
+    {
+      title: "Total Revenue",
+      value: `$${statsData.totalRevenue.toLocaleString()}`,
+      icon: <AttachMoney />,
+    },
+    {
+      title: "Total Customers",
+      value: statsData.totalCustomers.toString(),
+      icon: <People />,
+    },
+    {
+      title: "Generated Event Tickets",
+      value: statsData.generatedTickets.toString(),
+      icon: <LocalPlay />,
+    },
+  ];
+
   return (
     <Grid container spacing={3}>
       {stats.map((item, index) => (
-        <Grid item xs={12} md={3} key={index}>
+        <Grid item xs={12} md={4} key={index}>
           <Paper
             sx={{
               p: 3,
@@ -70,11 +126,6 @@ export default function Dashboard() {
             {/* Value */}
             <Typography variant="h4" sx={{ mt: 2, fontWeight: "bold" }}>
               {item.value}
-            </Typography>
-
-            {/* Change */}
-            <Typography variant="body2" sx={{ mt: 1, color: item.color }}>
-              {item.change}
             </Typography>
           </Paper>
         </Grid>
