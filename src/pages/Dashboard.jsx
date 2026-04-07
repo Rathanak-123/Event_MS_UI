@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Grid, Paper, Typography, Box, CircularProgress } from "@mui/material";
-import React, { useState, useEffect } from "react";
-import { Grid, Paper, Typography, Box } from "@mui/material";
 import {
   AttachMoney,
   Event,
   CalendarToday,
   BookOnline,
   People,
-  LocalPlay
+  LocalPlay,
 } from "@mui/icons-material";
 import { getAllEvents } from "../api/events.api";
 import { getAllBookings } from "../api/booking.api";
@@ -32,34 +30,38 @@ export default function Dashboard() {
           getAllEvents(),
           getAllBookings(),
           getAllCustomers(),
-          getEventTickets()
+          getEventTickets(),
         ]);
-        
+
         const totalEvents = events?.length || 0;
-        const upcomingEvents = events?.filter(e => {
-          const dateStr = e.date || e.start_date || e.start_time;
-          return dateStr ? new Date(dateStr) > new Date() : false;
-        }).length || 0;
-        
+        const upcomingEvents =
+          events?.filter((e) => {
+            const dateStr = e.date || e.start_date || e.start_time;
+            return dateStr ? new Date(dateStr) > new Date() : false;
+          }).length || 0;
+
         const totalBookings = bookings?.length || 0;
-        const totalRevenue = bookings?.reduce((sum, b) => sum + Number(b.total_price || b.total_amount || 0), 0) || 0;
+        const totalRevenue =
+          bookings?.reduce(
+            (sum, b) => sum + Number(b.total_price || b.total_amount || 0),
+            0,
+          ) || 0;
         const totalCustomers = customers?.length || 0;
         const generatedTickets = tickets?.length || 0;
-        
+
         setStatsData({
           totalEvents,
           upcomingEvents,
           totalBookings,
           totalRevenue,
           totalCustomers,
-          generatedTickets
+          generatedTickets,
         });
-        
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       }
     };
-    
+
     fetchDashboardData();
   }, []);
 
@@ -106,12 +108,14 @@ export default function Dashboard() {
               borderRadius: 3,
               background: "linear-gradient(135deg, #0f172a, #1e293b)",
               color: "white",
-            }}>
+            }}
+          >
             {/* Header */}
             <Box
               display="flex"
               justifyContent="space-between"
-              alignItems="center">
+              alignItems="center"
+            >
               <Typography variant="body2" color="gray">
                 {item.title}
               </Typography>
@@ -120,7 +124,8 @@ export default function Dashboard() {
                   backgroundColor: "#6d28d9",
                   p: 1,
                   borderRadius: "50%",
-                }}>
+                }}
+              >
                 {item.icon}
               </Box>
             </Box>
