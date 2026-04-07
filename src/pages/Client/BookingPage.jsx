@@ -64,6 +64,7 @@ const BookingPage = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrData, setQrData] = useState(null);
   const [createdBookingId, setCreatedBookingId] = useState(null);
+  const bookingIdRef = React.useRef(null);
   const [bookingTotal, setBookingTotal] = useState(0);
   const [paymentMd5, setPaymentMd5] = useState(null);
 
@@ -127,6 +128,7 @@ const BookingPage = () => {
 
       const newBookingId = response.id || response.data?.id;
       setCreatedBookingId(newBookingId);
+      bookingIdRef.current = newBookingId;
       setQrModalOpen(true);
       setQrLoading(true);
 
@@ -168,7 +170,8 @@ const BookingPage = () => {
     
     // Automatically generate the event ticket upon payment success
     try {
-        await generateEventTicket(createdBookingId);
+        const idToUse = bookingIdRef.current || createdBookingId;
+        await generateEventTicket(idToUse);
     } catch (err) {
         console.error("Auto-generation of ticket failed:", err);
         // We still proceed to success page as the booking is paid
@@ -180,15 +183,16 @@ const BookingPage = () => {
       severity: 'success' 
     });
 
+    const idToUse = bookingIdRef.current || createdBookingId;
     // Navigate to success page or my bookings after a slight delay
     setTimeout(() => {
         navigate('/success', { 
             state: { 
-                bookingId: createdBookingId, 
+                bookingId: idToUse, 
                 totalAmount: bookingTotal,
                 eventName: event?.event_name || event?.title,
                 booking: {
-                    id: createdBookingId,
+                    id: idToUse,
                     event: event,
                     customer: clientUser,
                     total_amount: bookingTotal,
@@ -197,18 +201,19 @@ const BookingPage = () => {
             } 
         });
     }, 2000);
-  }, [createdBookingId, bookingTotal, event, navigate]);
+}, [createdBookingId, bookingTotal, event, navigate, clientUser]);
 
   const handleCloseQR = useCallback(() => {
     setQrModalOpen(false);
     // Optionally navigate away after scanning
-    navigate(`/payment/${createdBookingId}`, { 
+    const idToUse = bookingIdRef.current || createdBookingId;
+    navigate(`/payment/${idToUse}`, { 
       state: { 
           totalAmount: bookingTotal,
           eventName: event?.event_name || event?.title
       } 
     });
-  }, [createdBookingId, bookingTotal, event, navigate]);
+}, [createdBookingId, bookingTotal, event, navigate]);
 
   if (loading) {
     return (

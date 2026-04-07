@@ -139,64 +139,16 @@ const PaymentPage = () => {
 
         {error && <Alert severity="error" sx={{ mb: 6, borderRadius: 3 }}>{error}</Alert>}
 
-        <Grid container spacing={6} justifyContent="center">
-          <Grid item xs={12} md={7}>
+        <Grid container justifyContent="center">
+          <Grid item xs={12} sm={10} md={8} lg={6}>
             <PaymentQR 
               qrData={qrData} 
               amount={totalAmount} 
               bookingId={bookingId}
               loading={loading}
             />
-          </Grid>
-
-          <Grid item xs={12} md={5}>
-            <Stack spacing={3}>
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  p: 4, 
-                  borderRadius: 6, 
-                  border: '1px solid', 
-                  borderColor: 'divider',
-                  bgcolor: 'background.paper'
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Summary</Typography>
-                <Stack spacing={2}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography color="text.secondary">Event</Typography>
-                        <Typography fontWeight={700} noWrap sx={{ maxWidth: '140px' }}>{eventName}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography color="text.secondary">Booking ID</Typography>
-                        <Typography fontWeight={700} variant="body2">{bookingId}</Typography>
-                    </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Total</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 900, color: 'primary.main' }}>
-                            ${totalAmount.toFixed(2)}
-                        </Typography>
-                    </Box>
-                </Stack>
-              </Paper>
-
-              <Button 
-                  fullWidth 
-                  variant="contained" 
-                  size="large" 
-                  onClick={handleDone}
-                  sx={{ 
-                      borderRadius: 4, 
-                      py: 2.5, 
-                      fontWeight: 900,
-                      fontSize: '1.1rem',
-                      boxShadow: '0 10px 25px rgba(15, 118, 110, 0.3)'
-                  }}
-              >
-                  I've Paid
-              </Button>
-              
+            
+            <Stack spacing={3} sx={{ mt: 4 }}>
               <Button 
                   fullWidth 
                   variant="text" 

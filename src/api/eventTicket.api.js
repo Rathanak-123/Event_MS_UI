@@ -19,6 +19,36 @@ export const getEventTickets = async (params = {}) => {
 };
 
 /**
+ * Get paginated event tickets.
+ * @param {Object} params - Pagination params including filters.
+ * @returns {Promise<Object>} Paginated ticket search results.
+ */
+export const getPaginatedEventTickets = async ({
+  page = 1,
+  limit = 10,
+  sort_by = "id",
+  sort_order = "asc",
+  search = "",
+  filters = {},
+}) => {
+  try {
+    const payload = {
+      page,
+      limit,
+      sort_by,
+      sort_order,
+      search,
+      filters,
+    };
+    const response = await axiosInstance.post(`${BASE}paginate/`, payload);
+    return response.data?.data || response.data || {};
+  } catch (error) {
+    console.error("Get paginated event tickets failed:", error);
+    throw error;
+  }
+};
+
+/**
  * Create a new event ticket.
  * @param {Object} ticketData - Ticket data (booking, ticket_code, qr_code, status).
  * @returns {Promise<Object>} Created ticket.
@@ -28,7 +58,14 @@ export const createEventTicket = async (ticketData) => {
     const response = await axiosInstance.post(BASE, ticketData);
     return response.data.data || response.data;
   } catch (error) {
-    console.error("Create event ticket failed:", error);
+    const errorDetails = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+    console.error("Create event ticket failed WITH DETAILS:", errorDetails);
+    
+    // Add debugging alert so we can see the exact backend error
+    if (typeof window !== 'undefined') {
+        window.alert(`Ticket Creation Failed (400) from Backend:\n\n${errorDetails}`);
+    }
+    
     throw error;
   }
 };
@@ -61,6 +98,6 @@ export const generateEventTicket = async (bookingId) => {
     booking: bookingId,
     ticket_code: code,
     qr_code: qrUrl,
-    status: 'ACTIVE'
+    status: 'UNUSED'
   });
 };

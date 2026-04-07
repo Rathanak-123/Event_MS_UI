@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import {
   Box,
   Container,
@@ -18,7 +20,8 @@ import {
 import {
   CalendarToday as CalendarIcon,
   LocationOn as LocationIcon,
-  ConfirmationNumber as TicketIcon
+  ConfirmationNumber as TicketIcon,
+  Payment as PaymentIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 import { getPaginatedBookings } from '../../api/booking.api';
@@ -27,6 +30,7 @@ import EventTicketModal from './EventTicketModal';
 
 
 const MyBookingsPage = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
@@ -37,23 +41,26 @@ const MyBookingsPage = () => {
   const [isTicketModalOpen, setIsTicketModalOpen] = useState(false);
 
   const fetchBookings = async () => {
-
     setLoading(true);
     setError(null);
     try {
-      // Assuming 'user' object from AuthContext contains the customer identifier
-      // or we can filter by 'customer_email' or similar if 'id' is not the customer ID.
-      // Based on AuthContext.jsx, we merged the customer profile into 'user'.
-      const customerId = user?.customer_id || user?.id;
+      // Prioritize the actual customer ID properties rather than the auth User ID
+      const customerId = user?.user?.id;
       
       const filters = {};
       if (customerId) {
-        filters.customer_id = customerId;
+        filters.customer_id = customerId; // Ensure correct filter is applied based on user input
       }
+      
+      console.log("Fetching bookings for Customer ID:", customerId, "User Object:", user);
+      console.log("Applied Filters:", filters);
 
       const data = await getPaginatedBookings({ filters, limit: 100 });
-      // Support different response structures
+      console.log("Raw GetPaginatedBookings Data:", data);
+
       const items = data?.items || data?.results || data?.data || (Array.isArray(data) ? data : []);
+      console.log("Processed Extracted Items:", items);
+      
       setBookings(items);
     } catch (err) {
       console.error("Failed to fetch bookings:", err);
@@ -79,8 +86,8 @@ const MyBookingsPage = () => {
 
   const filteredBookings = bookings.filter(b => {
     const status = b.status?.toLowerCase();
-    if (tabValue === 0) return status === 'upcoming' || status === 'confirmed' || status === 'pending';
-    if (tabValue === 1) return status === 'completed';
+    if (tabValue === 0) return status === 'pending';
+    if (tabValue === 1) return status === 'confirmed';
     if (tabValue === 2) return status === 'cancelled';
     return true;
   });
@@ -111,9 +118,9 @@ const MyBookingsPage = () => {
                 '& .Mui-selected': { color: 'primary.main' }
             }}
         >
-          <Tab label="Upcoming" />
-          <Tab label="Completed" />
-          <Tab label="Cancelled" />
+          <Tab label="pending" />
+          <Tab label="confirmed" />
+          <Tab label="cancelled" />
         </Tabs>
       </Box>
 
@@ -170,16 +177,26 @@ const MyBookingsPage = () => {
                             ${parseFloat(booking.total_amount || 0).toFixed(2)}
                         </Typography>
                         <Button 
-                            variant="outlined" 
+                            variant={booking.status?.toLowerCase() === 'pending' ? 'contained' : 'outlined'} 
+                            color={booking.status?.toLowerCase() === 'pending' ? 'warning' : 'primary'}
                             size="small" 
-                            startIcon={<TicketIcon />}
+                            startIcon={booking.status?.toLowerCase() === 'pending' ? <PaymentIcon /> : <TicketIcon />}
                             sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}
                             onClick={() => {
-                                setSelectedBooking(booking);
-                                setIsTicketModalOpen(true);
+                                if (booking.status?.toLowerCase() === 'pending') {
+                                    navigate(`/payment/${booking.id}`, {
+                                        state: {
+                                            totalAmount: parseFloat(booking.total_amount || 0),
+                                            eventName: booking.event?.event_name || booking.event?.name || 'Event'
+                                        }
+                                    });
+                                } else {
+                                    setSelectedBooking(booking);
+                                    setIsTicketModalOpen(true);
+                                }
                             }}
                         >
-                            View Ticket
+                            {booking.status?.toLowerCase() === 'pending' ? 'Pay Now' : 'View Ticket'}
                         </Button>
 
                     </Stack>
