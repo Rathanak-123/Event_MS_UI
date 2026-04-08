@@ -32,7 +32,7 @@ import EventTicketModal from './EventTicketModal';
 const MyBookingsPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const { user } = useAuth();
+  const { user, clientUser } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,15 +44,17 @@ const MyBookingsPage = () => {
     setLoading(true);
     setError(null);
     try {
-      // Prioritize the actual customer ID properties rather than the auth User ID
-      const customerId = user?.user?.id;
+      // Prioritize the actual customer ID properties rather than the auth User nested object
+      const activeUser = clientUser || user;
+      const customerId = activeUser?.id || activeUser?.user_id;
       
       const filters = {};
       if (customerId) {
         filters.customer_id = customerId; // Ensure correct filter is applied based on user input
+        filters.customer = customerId; // Sometimes the filter requires 'customer'
       }
       
-      console.log("Fetching bookings for Customer ID:", customerId, "User Object:", user);
+      console.log("Fetching bookings for Customer ID:", customerId, "User Object:", activeUser);
       console.log("Applied Filters:", filters);
 
       const data = await getPaginatedBookings({ filters, limit: 100 });
