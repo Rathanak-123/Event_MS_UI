@@ -9,6 +9,7 @@ import AttendanceReport from "./AttendanceReport";
 const ReportPage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [filters, setFilters] = useState({});
+  console.log("This is report")
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
