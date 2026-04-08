@@ -21,6 +21,8 @@ import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import SummarizeIcon from "@mui/icons-material/Summarize";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 
 // Icons for sub-items
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
@@ -33,6 +35,7 @@ import { logout } from "../api/authApi";
 export default function Sidebar({ open }) {
   const [userOpen, setUserOpen] = useState(true);
   const [settingOpen, setSettingOpen] = useState(false);
+  const [checkinOpen, setCheckinOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -96,6 +99,31 @@ export default function Sidebar({ open }) {
           </ListItemIcon>
           {open && <ListItemText primary="Booking" />}
         </ListItemButton>
+        <ListItemButton onClick={() => setCheckinOpen(!checkinOpen)}>
+          <ListItemIcon>
+            <QrCodeScannerIcon />
+          </ListItemIcon>
+          {open && <ListItemText primary="Check-In" />}
+          {open && (checkinOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
+        </ListItemButton>
+
+        <Collapse in={checkinOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/scanner">
+              <ListItemIcon>
+                <QrCodeScannerIcon />
+              </ListItemIcon>
+              <ListItemText primary="Scanner" />
+            </ListItemButton>
+
+            <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/stats">
+              <ListItemIcon>
+                <AssessmentIcon />
+              </ListItemIcon>
+              <ListItemText primary="Statistics" />
+            </ListItemButton>
+          </List>
+        </Collapse>
         <ListItemButton component={NavLink} to="/admin/reports">
           <ListItemIcon>
             <SummarizeIcon />

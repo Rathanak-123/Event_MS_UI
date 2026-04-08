@@ -21,6 +21,8 @@ import BookingDetail from "../pages/admin/booking/BookingDetail";
 import CustomerList from "../pages/admin/customer/CustomerList";
 import EditCustomer from "../pages/admin/customer/EditCustomer";
 import CustomerDetail from "../pages/admin/customer/CustomerDetail";
+import CheckinPage from "../pages/admin/checkin/CheckinPage";
+import CheckinStats from "../pages/admin/checkin/CheckinStats";
 import ReportPage from "../pages/admin/report/ReportPage";
 
 export default function AdminRouter({ dark, setDark }) {
@@ -65,6 +67,13 @@ export default function AdminRouter({ dark, setDark }) {
             <Route path="add" element={<EditBooking />} />
             <Route path="edit/:id" element={<EditBooking />} />
             <Route path=":id" element={<BookingDetail />} />
+          </Route>
+
+          {/* CHECK-IN ROUTES */}
+          <Route path="checkin">
+            <Route index element={<CheckinPage />} />
+            <Route path="scanner" element={<CheckinPage />} />
+            <Route path="stats" element={<CheckinStats />} />
           </Route>
 
           {/* CUSTOMER ROUTES */}
