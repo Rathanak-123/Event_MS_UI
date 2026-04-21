@@ -32,12 +32,14 @@ import TuneIcon from "@mui/icons-material/Tune";
 import SecurityIcon from "@mui/icons-material/Security";
 
 import { logout } from "../api/authApi";
-
+import logoImage from "../assets/photo/EMS-Use-with-White-Background.png";
+import { useTranslation } from "react-i18next";
 export default function Sidebar({ open }) {
   const [userOpen, setUserOpen] = useState(true);
   const [settingOpen, setSettingOpen] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await logout();
@@ -56,9 +58,17 @@ export default function Sidebar({ open }) {
           overflowX: "hidden",
         },
       }}>
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
-        <EventIcon color="primary" />
-        {open && <Typography fontWeight="bold">EventMaster</Typography>}
+      <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: open ? "flex-start" : "center", gap: 1 }}>
+        <img 
+          src={logoImage} 
+          alt="EventMaster Logo" 
+          style={{ 
+            width: open ? "100%" : "40px", 
+            maxWidth: open ? "160px" : "40px", 
+            height: "auto",
+            objectFit: "contain"
+          }} 
+        />
       </Box>
 
       <List>
@@ -66,69 +76,69 @@ export default function Sidebar({ open }) {
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Dashboard" />}
+          {open && <ListItemText primary={t("sidebar.dashboard")} />}
         </ListItemButton>
         <ListItemButton component={NavLink} to="/admin/categories">
           <ListItemIcon>
             <EventIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Categories" />}
+          {open && <ListItemText primary={t("sidebar.categories")} />}
         </ListItemButton>
         <ListItemButton component={NavLink} to="/admin/venue">
           <ListItemIcon>
             <LocationOnIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Venue" />}
+          {open && <ListItemText primary={t("sidebar.venue")} />}
         </ListItemButton>
-
+ 
         <ListItemButton component={NavLink} to="/admin/events">
           <ListItemIcon>
             <EventIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Events" />}
+          {open && <ListItemText primary={t("sidebar.events")} />}
         </ListItemButton>
-
+ 
         <ListItemButton component={NavLink} to="/admin/tickets">
           <ListItemIcon>
             <ConfirmationNumberIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Tickets" />}
+          {open && <ListItemText primary={t("sidebar.tickets")} />}
         </ListItemButton>
         <ListItemButton component={NavLink} to="/admin/bookings">
           <ListItemIcon>
             <ConfirmationNumberIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Booking" />}
+          {open && <ListItemText primary={t("sidebar.booking")} />}
         </ListItemButton>
         <ListItemButton onClick={() => setCheckinOpen(!checkinOpen)}>
           <ListItemIcon>
             <QrCodeScannerIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Check-In" />}
+          {open && <ListItemText primary={t("sidebar.checkin")} />}
           {open && (checkinOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
         </ListItemButton>
-
+ 
         <Collapse in={checkinOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/scanner">
               <ListItemIcon>
                 <QrCodeScannerIcon />
               </ListItemIcon>
-              <ListItemText primary="Scanner" />
+              <ListItemText primary={t("sidebar.scanner")} />
             </ListItemButton>
-
+ 
             <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/list">
               <ListItemIcon>
                 <FormatListBulletedIcon />
               </ListItemIcon>
-              <ListItemText primary="Check-In List" />
+              <ListItemText primary={t("sidebar.checkin_list")} />
             </ListItemButton>
-
+ 
             <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/stats">
               <ListItemIcon>
                 <AssessmentIcon />
               </ListItemIcon>
-              <ListItemText primary="Statistics" />
+              <ListItemText primary={t("sidebar.statistics")} />
             </ListItemButton>
           </List>
         </Collapse>
@@ -136,18 +146,18 @@ export default function Sidebar({ open }) {
           <ListItemIcon>
             <SummarizeIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Report" />}
+          {open && <ListItemText primary={t("sidebar.report")} />}
         </ListItemButton>
-
+ 
         {/* Users Section */}
         <ListItemButton onClick={() => setUserOpen(!userOpen)}>
           <ListItemIcon>
             <PeopleIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Users" />}
+          {open && <ListItemText primary={t("sidebar.users")} />}
           {open && (userOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
         </ListItemButton>
-
+ 
         <Collapse in={userOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             <ListItemButton
@@ -157,9 +167,9 @@ export default function Sidebar({ open }) {
               <ListItemIcon>
                 <ManageAccountsIcon />
               </ListItemIcon>
-              <ListItemText primary="User System" />
+              <ListItemText primary={t("sidebar.user_system")} />
             </ListItemButton>
-
+ 
             <ListItemButton
               sx={{ pl: 4 }}
               component={NavLink}
@@ -167,20 +177,20 @@ export default function Sidebar({ open }) {
               <ListItemIcon>
                 <PersonIcon />
               </ListItemIcon>
-              <ListItemText primary="User Client" />
+              <ListItemText primary={t("sidebar.user_client")} />
             </ListItemButton>
           </List>
         </Collapse>
-
+ 
         {/* Settings Section */}
         <ListItemButton onClick={() => setSettingOpen(!settingOpen)}>
           <ListItemIcon>
             <SettingsIcon />
           </ListItemIcon>
-          {open && <ListItemText primary="Settings" />}
+          {open && <ListItemText primary={t("sidebar.settings")} />}
           {open && (settingOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />)}
         </ListItemButton>
-
+ 
         <Collapse in={settingOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             <ListItemButton
@@ -190,9 +200,9 @@ export default function Sidebar({ open }) {
               <ListItemIcon>
                 <TuneIcon />
               </ListItemIcon>
-              <ListItemText primary="General" />
+              <ListItemText primary={t("sidebar.general")} />
             </ListItemButton>
-
+ 
             <ListItemButton
               sx={{ pl: 4 }}
               component={NavLink}
@@ -200,14 +210,14 @@ export default function Sidebar({ open }) {
               <ListItemIcon>
                 <SecurityIcon />
               </ListItemIcon>
-              <ListItemText primary="Security" />
+              <ListItemText primary={t("sidebar.security")} />
             </ListItemButton>
-
+ 
             <ListItemButton sx={{ pl: 4 }} onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutOutlinedIcon />
               </ListItemIcon>
-              <ListItemText primary="Logout" />
+              <ListItemText primary={t("common.logout")} />
             </ListItemButton>
           </List>
         </Collapse>

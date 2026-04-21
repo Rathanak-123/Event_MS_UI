@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Grid, Paper, Typography, Box, Avatar, Button, Chip, Divider, IconButton, CircularProgress } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { AttachMoney, AccountBalanceWallet, PersonOutline, AccessAlarm, Edit as EditIcon, Description, Event } from "@mui/icons-material";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { getAllEvents } from "../api/events.api";
@@ -10,6 +11,7 @@ import { getAllCustomers } from "../api/customer.api";
 const fallbackThumb = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=150&q=80";
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [statsData, setStatsData] = useState({
     totalEvents: 0,
@@ -117,7 +119,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={dashCardStyle}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="body2" color="text.secondary" fontWeight="bold">Total Revenue</Typography>
+              <Typography variant="body2" color="text.secondary" fontWeight="bold">{t("dashboard.total_revenue")}</Typography>
               <Box sx={{ bgcolor: '#f1f5f9', p: 0.5, borderRadius: '50%', color: '#0f766e', display: 'flex' }}>
                 <AttachMoney fontSize="small" />
               </Box>
@@ -135,7 +137,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={dashCardStyle}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="body2" color="text.secondary" fontWeight="bold">Total Events</Typography>
+              <Typography variant="body2" color="text.secondary" fontWeight="bold">{t("dashboard.total_events")}</Typography>
               <Box sx={{ bgcolor: '#f1f5f9', p: 0.5, borderRadius: '50%', color: '#0f766e', display: 'flex' }}>
                 <Event fontSize="small" />
               </Box>
@@ -153,7 +155,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={dashCardStyle}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="body2" color="text.secondary" fontWeight="bold">Total Bookings</Typography>
+              <Typography variant="body2" color="text.secondary" fontWeight="bold">{t("dashboard.total_bookings")}</Typography>
               <Box sx={{ bgcolor: '#f1f5f9', p: 0.5, borderRadius: '50%', color: '#0f766e', display: 'flex' }}>
                 <Description fontSize="small" />
               </Box>
@@ -171,7 +173,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={dashCardStyle}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="body2" color="text.secondary" fontWeight="bold">Total Customers</Typography>
+              <Typography variant="body2" color="text.secondary" fontWeight="bold">{t("dashboard.total_customers")}</Typography>
               <Box sx={{ bgcolor: '#f1f5f9', p: 0.5, borderRadius: '50%', color: '#0f766e', display: 'flex' }}>
                 <PersonOutline fontSize="small" />
               </Box>
@@ -194,8 +196,8 @@ export default function Dashboard() {
           {/* Recent Bookings List */}
           <Paper sx={{ ...dashCardStyle, mb: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-              <Typography variant="h6" fontWeight="bold" color="#1e293b">Current Bookings</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main' } }}>View All</Typography>
+              <Typography variant="h6" fontWeight="bold" color="#1e293b">{t("dashboard.current_bookings")}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main' } }}>{t("common.view_all")}</Typography>
             </Box>
             
             <Box display="flex" flexDirection="column" gap={0.5}>
@@ -217,12 +219,12 @@ export default function Dashboard() {
                     {booking.status || 'Confirmed'}
                   </Typography>
                   <Box width="15%" display="flex" justifyContent="flex-end">
-                    <Button size="small" startIcon={<EditIcon sx={{ fontSize: 16 }} />} sx={{ color: '#475569', textTransform: 'none', minWidth: 0, p: 0 }}>Edit</Button>
+                    <Button size="small" startIcon={<EditIcon sx={{ fontSize: 16 }} />} sx={{ color: '#475569', textTransform: 'none', minWidth: 0, p: 0 }}>{t("common.edit")}</Button>
                   </Box>
                 </Box>
               ))}
               {statsData.recentBookings.length === 0 && (
-                <Typography variant="body2" color="text.secondary" align="center" py={2}>No recent bookings found.</Typography>
+                <Typography variant="body2" color="text.secondary" align="center" py={2}>{t("dashboard.no_bookings")}</Typography>
               )}
             </Box>
           </Paper>
@@ -230,10 +232,10 @@ export default function Dashboard() {
           {/* Bookings Per Day Chart */}
           <Paper sx={dashCardStyle}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-              <Typography variant="h6" fontWeight="bold" color="#1e293b">Bookings Per Day</Typography>
+              <Typography variant="h6" fontWeight="bold" color="#1e293b">{t("dashboard.bookings_per_day")}</Typography>
               <Box sx={{ display: 'flex', bgcolor: '#f8fafc', borderRadius: 2 }}>
-                <Button size="small" sx={{ bgcolor: '#1e293b', color: 'white', '&:hover': { bgcolor: '#0f172a' }, borderRadius: 1.5, px: 2, textTransform: 'none' }}>Weekly</Button>
-                <Button size="small" sx={{ color: '#64748b', px: 2, textTransform: 'none' }}>Monthly</Button>
+                <Button size="small" sx={{ bgcolor: '#1e293b', color: 'white', '&:hover': { bgcolor: '#0f172a' }, borderRadius: 1.5, px: 2, textTransform: 'none' }}>{t("common.weekly")}</Button>
+                <Button size="small" sx={{ color: '#64748b', px: 2, textTransform: 'none' }}>{t("common.monthly")}</Button>
               </Box>
             </Box>
             
@@ -256,10 +258,10 @@ export default function Dashboard() {
           {/* Revenue Trend Area Chart */}
           <Paper sx={{ ...dashCardStyle, mb: 3 }}>
              <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-              <Typography variant="h6" fontWeight="bold" color="#1e293b">Revenue Trend (USD)</Typography>
+              <Typography variant="h6" fontWeight="bold" color="#1e293b">{t("dashboard.revenue_trend")}</Typography>
               <Box sx={{ display: 'flex', bgcolor: '#f8fafc', borderRadius: 2 }}>
-                <Button size="small" sx={{ bgcolor: '#1e293b', color: 'white', '&:hover': { bgcolor: '#0f172a' }, borderRadius: 1.5, px: 2, textTransform: 'none' }}>Weekly</Button>
-                <Button size="small" sx={{ color: '#64748b', px: 2, textTransform: 'none' }}>Monthly</Button>
+                <Button size="small" sx={{ bgcolor: '#1e293b', color: 'white', '&:hover': { bgcolor: '#0f172a' }, borderRadius: 1.5, px: 2, textTransform: 'none' }}>{t("common.weekly")}</Button>
+                <Button size="small" sx={{ color: '#64748b', px: 2, textTransform: 'none' }}>{t("common.monthly")}</Button>
               </Box>
             </Box>
 
@@ -285,18 +287,18 @@ export default function Dashboard() {
           {/* Top Events List */}
           <Paper sx={dashCardStyle}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-              <Typography variant="h6" fontWeight="bold" color="#1e293b">Top Events</Typography>
+              <Typography variant="h6" fontWeight="bold" color="#1e293b">{t("dashboard.top_events")}</Typography>
               <Box sx={{ display: 'flex', bgcolor: '#f8fafc', borderRadius: 2 }}>
-                <Button size="small" sx={{ bgcolor: '#1e293b', color: 'white', '&:hover': { bgcolor: '#0f172a' }, borderRadius: 1.5, px: 2, textTransform: 'none' }}>Weekly</Button>
-                <Button size="small" sx={{ color: '#64748b', px: 2, textTransform: 'none' }}>Monthly</Button>
+                <Button size="small" sx={{ bgcolor: '#1e293b', color: 'white', '&:hover': { bgcolor: '#0f172a' }, borderRadius: 1.5, px: 2, textTransform: 'none' }}>{t("common.weekly")}</Button>
+                <Button size="small" sx={{ color: '#64748b', px: 2, textTransform: 'none' }}>{t("common.monthly")}</Button>
               </Box>
             </Box>
 
             {/* List Header */}
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="caption" color="#94a3b8" width="60%">Event Name</Typography>
-              <Typography variant="caption" color="#94a3b8" width="20%">Avg Price</Typography>
-              <Typography variant="caption" color="#94a3b8" width="20%" align="right">Total Est. Rev</Typography>
+              <Typography variant="caption" color="#94a3b8" width="60%">{t("dashboard.event_name")}</Typography>
+              <Typography variant="caption" color="#94a3b8" width="20%">{t("dashboard.avg_price")}</Typography>
+              <Typography variant="caption" color="#94a3b8" width="20%" align="right">{t("dashboard.total_est_rev")}</Typography>
             </Box>
 
             <Box display="flex" flexDirection="column" gap={0}>
@@ -317,7 +319,7 @@ export default function Dashboard() {
                 </Box>
               ))}
               {statsData.topEvents.length === 0 && (
-                <Typography variant="body2" color="text.secondary" align="center" py={3}>No event data available.</Typography>
+                <Typography variant="body2" color="text.secondary" align="center" py={3}>{t("dashboard.no_event_data")}</Typography>
               )}
             </Box>
 

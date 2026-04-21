@@ -1,0 +1,57 @@
+{
+  "common": {
+    "welcome": "Welcome to EventMaster",
+    "search": "Search...",
+    "logout": "Logout",
+    "login": "Login",
+    "signup": "Sign Up",
+    "view_all": "View All",
+    "edit": "Edit",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "categories": "Categories",
+    "venue": "Venue",
+    "events": "Events",
+    "tickets": "Tickets",
+    "booking": "Booking",
+    "checkin": "Check-In",
+    "scanner": "Scanner",
+    "checkin_list": "Check-In List",
+    "statistics": "Statistics",
+    "report": "Report",
+    "users": "Users",
+    "user_system": "User System",
+    "user_client": "User Client",
+    "settings": "Settings",
+    "general": "General",
+    "security": "Security"
+  },
+  "header": {
+    "user_list": "User List",
+    "user_roles": "User Roles"
+  },
+  "navbar": {
+    "browse_events": "Browse Events",
+    "categories": "Categories",
+    "my_bookings": "My Bookings",
+    "search_placeholder": "Search events..."
+  },
+  "dashboard": {
+    "total_revenue": "Total Revenue",
+    "total_events": "Total Events",
+    "total_bookings": "Total Bookings",
+    "total_customers": "Total Customers",
+    "current_bookings": "Current Bookings",
+    "no_bookings": "No recent bookings found.",
+    "bookings_per_day": "Bookings Per Day",
+    "revenue_trend": "Revenue Trend (USD)",
+    "top_events": "Top Events",
+    "event_name": "Event Name",
+    "avg_price": "Avg Price",
+    "total_est_rev": "Total Est. Rev",
+    "no_event_data": "No event data available."
+  }
+}

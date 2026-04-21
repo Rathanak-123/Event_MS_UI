@@ -21,7 +21,9 @@ import {
   ListItemText,
   Divider,
   Stack,
-  alpha
+  alpha,
+  Select,
+  FormControl
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -33,6 +35,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 
 const Navbar = () => {
@@ -42,6 +45,11 @@ const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { clientUser: user, signOut } = useAuth();
+  const { i18n, t } = useTranslation();
+
+  const handleLanguageChange = (event) => {
+    i18n.changeLanguage(event.target.value);
+  };
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -58,9 +66,9 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { title: 'Browse Events', path: '/' },
-    { title: 'Categories', path: '#' },
-    { title: 'My Bookings', path: '/my-bookings' }
+    { title: t("navbar.browse_events"), path: "/" },
+    { title: t("navbar.categories"), path: "#" },
+    { title: t("navbar.my_bookings"), path: "/my-bookings" }
   ];
 
   return (
@@ -103,7 +111,7 @@ const Navbar = () => {
             }}>
               <SearchIcon sx={{ color: 'text.secondary', fontSize: 20, mr: 1 }} />
               <InputBase
-                placeholder="Search events..."
+                placeholder={t("navbar.search_placeholder")}
                 sx={{ width: '100%', fontSize: '0.9rem' }}
               />
             </Box>
@@ -130,6 +138,24 @@ const Navbar = () => {
 
           {/* User Actions */}
           <Stack direction="row" spacing={1.5} alignItems="center">
+            {/* Language Toggle */}
+            <FormControl variant="standard" sx={{ minWidth: 50, mr: 1 }}>
+              <Select
+                value={i18n.language || 'en'}
+                onChange={handleLanguageChange}
+                disableUnderline
+                sx={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: 600,
+                  color: 'text.secondary',
+                  '&:hover': { color: 'primary.main' }
+                }}
+              >
+                <MenuItem value="en">EN</MenuItem>
+                <MenuItem value="km">KM</MenuItem>
+              </Select>
+            </FormControl>
+
             {user ? (
               <>
                 <IconButton size="small" color="inherit">
@@ -147,8 +173,8 @@ const Navbar = () => {
               <>
                 {!isMobile ? (
                   <>
-                    <Button component={Link} to="/login" color="inherit" sx={{ fontWeight: 600 }}>Login</Button>
-                    <Button component={Link} to="/signup" variant="contained" color="primary" sx={{ borderRadius: 2 }}>Sign Up</Button>
+                    <Button component={Link} to="/login" color="inherit" sx={{ fontWeight: 600 }}>{t("common.login")}</Button>
+                    <Button component={Link} to="/signup" variant="contained" color="primary" sx={{ borderRadius: 2 }}>{t("common.signup")}</Button>
                   </>
                 ) : (
                   <IconButton color="inherit" onClick={() => setMobileMenuOpen(true)}>
@@ -208,9 +234,9 @@ const Navbar = () => {
           </Typography>
         </Box>
         <Divider />
-        <MenuItem onClick={handleProfileMenuClose} component={Link} to="/my-bookings">My Bookings</MenuItem>
+        <MenuItem onClick={handleProfileMenuClose} component={Link} to="/my-bookings">{t("navbar.my_bookings")}</MenuItem>
         <Divider />
-        <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>Logout</MenuItem>
+        <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>{t("common.logout")}</MenuItem>
       </Menu>
     </AppBar>
   );

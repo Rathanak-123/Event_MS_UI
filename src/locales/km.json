@@ -1,0 +1,57 @@
+{
+  "common": {
+    "welcome": "សូមស្វាគមន៍មកកាន់ EventMaster",
+    "search": "ស្វែងរក...",
+    "logout": "ចាកចេញ",
+    "login": "ចូល",
+    "signup": "ចុះឈ្មោះ",
+    "view_all": "មើលទាំងអស់",
+    "edit": "កែសម្រួល",
+    "weekly": "ប្រចាំសប្តាហ៍",
+    "monthly": "ប្រចាំខែ"
+  },
+  "sidebar": {
+    "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+    "categories": "ប្រភេទ",
+    "venue": "ទីតាំង",
+    "events": "ព្រឹត្តិការណ៍",
+    "tickets": "សំបុត្រ",
+    "booking": "ការកក់",
+    "checkin": "ការចុះឈ្មោះចូល",
+    "scanner": "ម៉ាស៊ីនស្កេន",
+    "checkin_list": "បញ្ជីចុះឈ្មោះចូល",
+    "statistics": "ស្ថិតិ",
+    "report": "របាយការណ៍",
+    "users": "អ្នកប្រើប្រាស់",
+    "user_system": "ប្រព័ន្ធអ្នកប្រើប្រាស់",
+    "user_client": "អតិថិជន",
+    "settings": "ការកំណត់",
+    "general": "ទូទៅ",
+    "security": "សន្តិសុខ"
+  },
+  "header": {
+    "user_list": "បញ្ជីអ្នកប្រើប្រាស់",
+    "user_roles": "តួនាទីអ្នកប្រើប្រាស់"
+  },
+  "navbar": {
+    "browse_events": "មើលព្រឹត្តិការណ៍",
+    "categories": "ប្រភេទ",
+    "my_bookings": "ការកក់របស់ខ្ញុំ",
+    "search_placeholder": "ស្វែងរកព្រឹត្តិការណ៍..."
+  },
+  "dashboard": {
+    "total_revenue": "ចំណូលសរុប",
+    "total_events": "ព្រឹត្តិការណ៍សរុប",
+    "total_bookings": "ការកក់សរុប",
+    "total_customers": "អតិថិជនសរុប",
+    "current_bookings": "ការកក់បច្ចុប្បន្ន",
+    "no_bookings": "មិនមានការកក់ថ្មីៗទេ។",
+    "bookings_per_day": "ការកក់ក្នុងមួយថ្ងៃ",
+    "revenue_trend": "និន្នាការចំណូល (ដុល្លារ)",
+    "top_events": "ព្រឹត្តិការណ៍កំពូល",
+    "event_name": "ឈ្មោះព្រឹត្តិការណ៍",
+    "avg_price": "តម្លៃមធ្យម",
+    "total_est_rev": "ចំណូលប៉ាន់ស្មានសរុប",
+    "no_event_data": "មិនមានទិន្នន័យព្រឹត្តិការណ៍ទេ។"
+  }
+}
