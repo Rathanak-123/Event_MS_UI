@@ -22,6 +22,7 @@ import CustomerList from "../pages/admin/customer/CustomerList";
 import EditCustomer from "../pages/admin/customer/EditCustomer";
 import CustomerDetail from "../pages/admin/customer/CustomerDetail";
 import CheckinPage from "../pages/admin/checkin/CheckinPage";
+import CheckinListPage from "../pages/admin/checkin/CheckinListPage";
 import CheckinStats from "../pages/admin/checkin/CheckinStats";
 import ReportPage from "../pages/admin/report/ReportPage";
 
@@ -73,6 +74,7 @@ export default function AdminRouter({ dark, setDark }) {
           <Route path="checkin">
             <Route index element={<CheckinPage />} />
             <Route path="scanner" element={<CheckinPage />} />
+            <Route path="list" element={<CheckinListPage />} />
             <Route path="stats" element={<CheckinStats />} />
           </Route>
 

@@ -23,6 +23,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 
 // Icons for sub-items
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
@@ -114,6 +115,13 @@ export default function Sidebar({ open }) {
                 <QrCodeScannerIcon />
               </ListItemIcon>
               <ListItemText primary="Scanner" />
+            </ListItemButton>
+
+            <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/list">
+              <ListItemIcon>
+                <FormatListBulletedIcon />
+              </ListItemIcon>
+              <ListItemText primary="Check-In List" />
             </ListItemButton>
 
             <ListItemButton sx={{ pl: 4 }} component={NavLink} to="/admin/checkin/stats">
