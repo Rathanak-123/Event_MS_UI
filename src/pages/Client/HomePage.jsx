@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -7,26 +7,19 @@ import {
   Grid,
   Button,
   Stack,
-  alpha,
-  useTheme,
   Skeleton,
   Alert,
-  Paper
 } from '@mui/material';
 import SearchFilterBar from './SearchFilterBar';
 import CategoryChips from './CategoryChips';
 import EventCard from './EventCard';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { getPaginatedEvents } from '../../api/events.api';
 import { getAllCategories } from '../../api/category.api';
 import { getAllVenues } from '../../api/venue.api';
 import { extractErrorMessage } from '../../utils/errorHandler';
-
-
-import { getImageUrl } from '../../utils/imageUtils';
+import heroConcert from '../../assets/hero_concert.png';
 
 const HomePage = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [categories, setCategories] = useState([{ label: 'All', id: null }]);
@@ -38,44 +31,37 @@ const HomePage = () => {
   const [selectedVenue, setSelectedVenue] = useState('all');
   const [selectedDate, setSelectedDate] = useState('all');
   const [searchText, setSearchText] = useState('');
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch categories and venues
       const [catData, venueData] = await Promise.all([
         getAllCategories(),
-        getAllVenues()
+        getAllVenues(),
       ]);
 
       const formattedCats = [
         { label: 'All', id: null },
-        ...catData.map(c => ({ label: c.category_name || c.name, id: c.id }))
+        ...catData.map((c) => ({ label: c.category_name || c.name, id: c.id })),
       ];
       setCategories(formattedCats);
       setVenues(venueData || []);
 
-      // Fetch events
       const eventParams = {
         limit: 12,
         search: searchText,
-        filters: {}
+        filters: {},
       };
+      if (selectedCategoryId) eventParams.filters.category_id = selectedCategoryId;
+      if (selectedVenue !== 'all') eventParams.filters.venue_id = selectedVenue;
 
-      if (selectedCategoryId) {
-        eventParams.filters.category_id = selectedCategoryId;
-      }
-      if (selectedVenue !== 'all') {
-        eventParams.filters.venue_id = selectedVenue;
-      }
-      
       const data = await getPaginatedEvents(eventParams);
-      // Support multiple response structures
-      const items = data?.items || data?.results || data?.data || (Array.isArray(data) ? data : []);
+      const items =
+        data?.items || data?.results || data?.data || (Array.isArray(data) ? data : []);
       setEvents(items);
     } catch (err) {
       console.error(err);
       setError(extractErrorMessage(err));
-
     } finally {
       setLoading(false);
     }
@@ -85,9 +71,7 @@ const HomePage = () => {
     fetchData();
   }, [selectedCategoryId, selectedVenue, selectedDate]);
 
-  const handleSearch = () => {
-    fetchData();
-  };
+  const handleSearch = () => fetchData();
 
   const handleCategorySelect = (id, label) => {
     setSelectedCategoryId(id);
@@ -97,12 +81,14 @@ const HomePage = () => {
   const renderEventGrid = (items, isLoading) => {
     if (isLoading) {
       return (
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <Grid container spacing={2.5}>
+          {[1, 2, 3, 4].map((i) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={`skeleton-${i}`}>
-              <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 4, mb: 1 }} />
-              <Skeleton width="80%" sx={{ mb: 1 }} />
-              <Skeleton width="60%" />
+              <Skeleton
+                variant="rectangular"
+                height={280}
+                sx={{ borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.06)' }}
+              />
             </Grid>
           ))}
         </Grid>
@@ -111,15 +97,38 @@ const HomePage = () => {
 
     if (!items || items.length === 0) {
       return (
-        <Box sx={{ py: 10, textAlign: 'center', bgcolor: alpha(theme.palette.text.primary, 0.02), borderRadius: 6, border: '1px dashed', borderColor: 'divider' }}>
-          <Typography variant="h6" color="text.secondary">No events found matching your criteria.</Typography>
-          <Button sx={{ mt: 2 }} onClick={() => { setSelectedCategoryId(null); setSelectedCategoryLabel('All'); setSearchText(''); setSelectedVenue('all'); setSelectedDate('all'); fetchData(); }}>Clear Filters</Button>
+        <Box
+          sx={{
+            py: 10,
+            textAlign: 'center',
+            bgcolor: 'rgba(255,255,255,0.03)',
+            borderRadius: '16px',
+            border: '1px dashed rgba(255,255,255,0.12)',
+          }}
+        >
+          <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+            No events found matching your criteria.
+          </Typography>
+          <Button
+            sx={{ mt: 2, color: '#2dd4bf', borderColor: '#2dd4bf' }}
+            variant="outlined"
+            onClick={() => {
+              setSelectedCategoryId(null);
+              setSelectedCategoryLabel('All');
+              setSearchText('');
+              setSelectedVenue('all');
+              setSelectedDate('all');
+              fetchData();
+            }}
+          >
+            Clear Filters
+          </Button>
         </Box>
       );
     }
 
     return (
-      <Grid container spacing={3}>
+      <Grid container spacing={2.5}>
         {items.map((event) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={event.id}>
             <EventCard event={event} />
@@ -130,130 +139,172 @@ const HomePage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 10 }}>
-      
-      {/* Hero Section */}
-      <Box 
-        sx={{ 
-          position: 'relative', 
-          pt: { xs: 12, md: 20 },
-          pb: { xs: 8, md: 15 },
-          bgcolor: 'background.paper',
+    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', color: '#fff' }}>
+      {/* ─────────────── HERO ─────────────── */}
+      <Box
+        sx={{
+          position: 'relative',
+          minHeight: { xs: '75vh', md: '85vh' },
+          display: 'flex',
+          alignItems: 'flex-end',
           overflow: 'hidden',
         }}
       >
-        {/* Background Decorative Elements */}
-        <Box sx={{ 
-            position: 'absolute', 
-            top: -200, 
-            right: -100, 
-            width: 800, 
-            height: 800, 
-            borderRadius: '50%', 
-            background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.08)} 0%, transparent 70%)`,
-            zIndex: 0
-        }} />
-        <Box sx={{ 
-            position: 'absolute', 
-            bottom: -150, 
-            left: -100, 
-            width: 600, 
-            height: 600, 
-            borderRadius: '50%', 
-            background: `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.05)} 0%, transparent 70%)`,
-            zIndex: 0
-        }} />
-        
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Box sx={{ maxWidth: '850px', mb: 8, textAlign: { xs: 'center', md: 'left' } }}>
-            <Typography 
-              variant="h1" 
-              sx={{ 
-                  fontSize: { xs: '3.2rem', md: '5rem' }, 
-                  fontWeight: 900, 
-                  mb: 3,
-                  lineHeight: 0.95,
-                  letterSpacing: '-3px',
-                  color: 'text.primary'
+        {/* Background image */}
+        <Box
+          component="img"
+          src={heroConcert}
+          alt="Concert hero"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center top',
+          }}
+        />
+
+        {/* Dark gradient overlays */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(to bottom, rgba(10,10,10,0.15) 0%, rgba(10,10,10,0.55) 55%, rgba(10,10,10,0.97) 100%)',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(to right, rgba(10,10,10,0.4) 0%, transparent 60%)',
+          }}
+        />
+
+        {/* Hero Content */}
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, pb: { xs: 7, md: 10 }, pt: 14 }}>
+          <Box sx={{ maxWidth: 560 }}>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.6rem', md: '4rem' },
+                fontWeight: 900,
+                lineHeight: 1.05,
+                letterSpacing: '-2px',
+                color: '#fff',
+                mb: 2,
               }}
             >
-              Discover Your Next <br />
-              <Box component="span" sx={{ 
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                display: 'inline-block'
-              }}>Extraordinary</Box> Event
+              What's Playing Soon
             </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                  mb: 5, 
-                  fontWeight: 500, 
-                  color: 'text.secondary',
-                  maxWidth: '600px',
-                  mx: { xs: 'auto', md: 0 },
-                  fontSize: '1.25rem',
-                  lineHeight: 1.6,
-                  opacity: 0.9
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '1.05rem',
+                mb: 5,
+                lineHeight: 1.65,
+                maxWidth: 420,
               }}
             >
-              The premium platform for booking tickets to exclusive concerts, high-stakes sports, and inspiring workshops. Experience the extraordinary.
+              Find the perfect show to experience your favorite music live.
             </Typography>
           </Box>
-          
-          <Box sx={{ mt: 2, maxWidth: '1000px' }}>
-            <SearchFilterBar 
-                searchText={searchText} 
-                setSearchText={setSearchText} 
-                onSearch={handleSearch}
-                venues={venues}
-                selectedVenue={selectedVenue}
-                setSelectedVenue={setSelectedVenue}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
+
+          {/* Search bar embedded in hero */}
+          <Box sx={{ maxWidth: 860 }}>
+            <SearchFilterBar
+              searchText={searchText}
+              setSearchText={setSearchText}
+              onSearch={handleSearch}
+              venues={venues}
+              selectedVenue={selectedVenue}
+              setSelectedVenue={setSelectedVenue}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
             />
           </Box>
         </Container>
       </Box>
 
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ py: 10 }}>
-        {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 3 }}>{error}</Alert>}
+      {/* ─────────────── EVENTS SECTION ─────────────── */}
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 } }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 4, borderRadius: 2, bgcolor: 'rgba(239,68,68,0.1)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.25)' }}>
+            {error}
+          </Alert>
+        )}
 
-        {/* Category Filters */}
-        <Box sx={{ mb: 8 }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
-            <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: '-1.5px' }}>Explore by Category</Typography>
+        {/* Section Header */}
+        <Box sx={{ mb: 5, textAlign: 'center' }}>
+          <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.2} sx={{ mb: 1.5 }}>
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#ef4444', boxShadow: '0 0 8px #ef4444' }} />
+            <Typography
+              sx={{
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                color: 'rgba(255,255,255,0.55)',
+                textTransform: 'uppercase',
+              }}
+            >
+              All Events
+            </Typography>
           </Stack>
-          <CategoryChips 
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 900,
+              fontSize: { xs: '1.9rem', md: '2.6rem' },
+              letterSpacing: '-1.5px',
+              color: '#fff',
+            }}
+          >
+            Discover Every Event{' '}
+            <Box component="span" sx={{ color: '#ef4444' }}>
+              Happening Soon
+            </Box>
+          </Typography>
+        </Box>
+
+        {/* Category Chips */}
+        <Box sx={{ mb: 5 }}>
+          <CategoryChips
             categories={categories}
-            selectedId={selectedCategoryId} 
-            onSelect={handleCategorySelect} 
+            selectedId={selectedCategoryId}
+            onSelect={handleCategorySelect}
           />
         </Box>
 
-        {/* Event Grid Section */}
-        <Box sx={{ mb: 10 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
-            <Box>
-              <Typography variant="h3" sx={{ fontWeight: 900, mb: 1.5, letterSpacing: '-2px' }}>
-                {selectedCategoryLabel === 'All' ? 'Upcoming Experiences' : `${selectedCategoryLabel} Events`}
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>Hand-picked events matching your unique taste</Typography>
-            </Box>
-            <Button 
-                endIcon={<ArrowForwardIcon />} 
-                variant="text"
-                sx={{ fontWeight: 800, fontSize: '1rem', color: 'primary.main' }}
-            >
-                View All
-            </Button>
-          </Stack>
-          
-          {renderEventGrid(events, loading)}
-        </Box>
+        {/* Event Grid */}
+        {renderEventGrid(events, loading)}
 
+        {/* View All */}
+        {!loading && events.length > 0 && (
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/events')}
+              sx={{
+                color: '#fff',
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderRadius: '50px',
+                px: 5,
+                py: 1.4,
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                '&:hover': {
+                  borderColor: 'rgba(255,255,255,0.5)',
+                  bgcolor: 'rgba(255,255,255,0.05)',
+                },
+              }}
+            >
+              View All Events
+            </Button>
+          </Box>
+        )}
       </Container>
     </Box>
   );

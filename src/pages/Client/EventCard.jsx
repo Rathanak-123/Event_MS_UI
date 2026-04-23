@@ -1,48 +1,46 @@
-import React, { useState, useEffect } from "react";
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardMedia, 
-  CardContent, 
-  Button,
-  Stack
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Card,
+  CardMedia,
+  Stack,
+  Chip,
+  IconButton,
+} from '@mui/material';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
-import StarIcon from '@mui/icons-material/Star';
-import { getImageUrl } from "../../utils/imageUtils";
-import { getPaginatedTickets } from "../../api/ticket.api";
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import { getImageUrl } from '../../utils/imageUtils';
+import { getPaginatedTickets } from '../../api/ticket.api';
 
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
-  const { 
+  const {
     id,
     event_name,
     event_date,
     venue,
-    image = ""
+    image = '',
+    category,
   } = event || {};
 
   const propTickets = event?.tickets;
   const [tickets, setTickets] = useState(propTickets || []);
-  const [loadingPrice, setLoadingPrice] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if ((!propTickets || propTickets.length === 0) && id) {
       if (tickets.length > 0) return;
       const fetchTickets = async () => {
-        setLoadingPrice(true);
         try {
           const data = await getPaginatedTickets({ filters: { event_id: id }, limit: 20 });
           const items = data?.items || data?.results || data?.data || (Array.isArray(data) ? data : []);
           setTickets(items);
         } catch (err) {
-          console.error("Failed to fetch tickets for event:", id, err);
-          if (tickets.length === 0) setTickets([]);
-        } finally {
-          setLoadingPrice(false);
+          console.error('Failed to fetch tickets for event:', id, err);
         }
       };
       fetchTickets();
@@ -51,172 +49,200 @@ const EventCard = ({ event }) => {
     }
   }, [id, propTickets]);
 
-  const title = event_name || event.title || event.name || "Unnamed Event";
-  
+  const title = event_name || event?.title || event?.name || 'Unnamed Event';
+
   const formatDate = () => {
-    const rawDate = event_date || event.start_date || event.date;
-    if (!rawDate) return "Date TBA";
+    const rawDate = event_date || event?.start_date || event?.date;
+    if (!rawDate) return 'Date TBA';
     try {
-      return new Date(rawDate).toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      return new Date(rawDate).toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     } catch (e) {
       return rawDate;
     }
   };
-  const date = formatDate();
 
-  const location = venue?.name || event.venue_name || event.location || "Venue TBA";
+  const location = venue?.name || event?.venue_name || event?.location || 'Venue TBA';
+  const date = formatDate();
+  const categoryLabel =
+    category?.category_name || category?.name || event?.category_name || null;
 
   const getDisplayPrice = () => {
     if (tickets && tickets.length > 0) {
-      const validPrices = tickets.map(t => Number(t.price)).filter(p => !isNaN(p));
+      const validPrices = tickets.map((t) => Number(t.price)).filter((p) => !isNaN(p));
       if (validPrices.length > 0) {
         const minPrice = Math.min(...validPrices);
-        return minPrice > 0 ? `$${minPrice}` : 'Free';
+        return minPrice > 0 ? `$${minPrice.toFixed(2)}` : 'Free';
       }
     }
-    const p = event.price ?? event.starting_price ?? event.min_price ?? event.base_price ?? event.propPrice;
-    if (p !== undefined && p !== null && p !== "") {
+    const p = event?.price ?? event?.starting_price ?? event?.min_price ?? event?.base_price;
+    if (p !== undefined && p !== null && p !== '') {
       const numP = Number(p);
-      if (!isNaN(numP)) return numP > 0 ? `$${numP}` : 'Free';
-      return p;
+      if (!isNaN(numP)) return numP > 0 ? `$${numP.toFixed(2)}` : 'Free';
     }
-    return "Check Tickets";
+    return null;
   };
 
   const price = getDisplayPrice();
 
   return (
-    <Card 
+    <Card
       elevation={0}
       onClick={() => navigate(`/event/${id}`)}
-      sx={{ 
-        height: "100%",
-        borderRadius: "20px",
-        overflow: "hidden",
-        border: "1px solid #f0f0f0",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        cursor: "pointer",
-        bgcolor: "#fff",
-        "&:hover": {
-          transform: "translateY(-8px)",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
-          borderColor: "transparent"
-        }
+      sx={{
+        position: 'relative',
+        height: '100%',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        bgcolor: '#1a1a1a',
+        border: '1px solid rgba(255,255,255,0.07)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        '&:hover': {
+          transform: 'translateY(-6px)',
+          borderColor: 'rgba(255,255,255,0.15)',
+          boxShadow: '0 20px 48px rgba(0,0,0,0.5)',
+        },
       }}
     >
-      <Box sx={{ position: "relative", paddingTop: "66.67%" /* 3:2 Aspect Ratio */ }}>
+      {/* Image */}
+      <Box sx={{ position: 'relative', paddingTop: '60%' }}>
         <CardMedia
           component="img"
           image={getImageUrl(image)}
           alt={title}
-          sx={{ 
-            position: "absolute",
+          sx={{
+            position: 'absolute',
             top: 0,
             left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover"
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
           }}
         />
+        {/* Dark gradient overlay on image */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%)',
+          }}
+        />
+
+        {/* Category chip top-left */}
+        {categoryLabel && (
+          <Chip
+            label={categoryLabel.toUpperCase()}
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: 12,
+              left: 12,
+              bgcolor: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(8px)',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '0.68rem',
+              letterSpacing: '0.06em',
+              border: '1px solid rgba(255,255,255,0.18)',
+              height: 24,
+            }}
+          />
+        )}
+
+        {/* Bookmark top-right */}
+        <IconButton
+          onClick={(e) => { e.stopPropagation(); setSaved((s) => !s); }}
+          size="small"
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            bgcolor: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(8px)',
+            color: saved ? '#0d9488' : 'rgba(255,255,255,0.85)',
+            width: 32,
+            height: 32,
+            '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+          }}
+        >
+          {saved ? (
+            <BookmarkIcon sx={{ fontSize: 16 }} />
+          ) : (
+            <BookmarkBorderIcon sx={{ fontSize: 16 }} />
+          )}
+        </IconButton>
       </Box>
 
-      <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
-        {/* Title and Rating */}
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              fontWeight: 700, 
-              fontSize: "1.2rem",
-              lineHeight: 1.25,
-              color: "#111",
-              flex: 1,
-              pr: 1,
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden"
+      {/* Content */}
+      <Box sx={{ p: 2 }}>
+        {/* Title */}
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 700,
+            color: '#fff',
+            mb: 1.2,
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            fontSize: '1rem',
+          }}
+        >
+          {title}
+        </Typography>
+
+        {/* Location */}
+        <Stack direction="row" alignItems="center" spacing={0.7} sx={{ mb: 0.8 }}>
+          <LocationOnOutlinedIcon sx={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.45)' }} />
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'rgba(255,255,255,0.55)',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontSize: '0.8rem',
             }}
           >
-            {title}
+            {location}
           </Typography>
-          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
-            <StarIcon sx={{ color: "#FFC107", fontSize: "1.2rem" }} />
-            <Typography sx={{ fontWeight: 600, fontSize: "1rem", color: "#111" }}>
-              4.8
-            </Typography>
-          </Stack>
         </Stack>
 
-        {/* Details: Location and Date */}
-        <Stack spacing={1.2} sx={{ mb: 3.5 }}>
-          <Stack direction="row" alignItems="center" spacing={1.2} sx={{ color: "#666" }}>
-            <LocationOnOutlinedIcon sx={{ fontSize: "1.2rem" }} />
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                fontSize: "0.95rem", 
-                fontWeight: 500,
-                whiteSpace: "nowrap", 
-                overflow: "hidden", 
-                textOverflow: "ellipsis" 
-              }}
+        {/* Date + Price row */}
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" spacing={0.7}>
+            <CalendarTodayOutlinedIcon sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }} />
+            <Typography
+              variant="caption"
+              sx={{ color: 'rgba(255,255,255,0.55)', fontWeight: 500, fontSize: '0.78rem' }}
             >
-              {location}
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={1.2} sx={{ color: "#666" }}>
-            <CalendarTodayOutlinedIcon sx={{ fontSize: "1.1rem", ml: 0.1 }} />
-            <Typography variant="body2" sx={{ fontSize: "0.95rem", fontWeight: 500 }}>
               {date}
             </Typography>
           </Stack>
-        </Stack>
 
-        {/* Footer: Price and Button */}
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              fontWeight: 800, 
-              color: "#000",
-              fontSize: "1.4rem",
-              letterSpacing: "-0.5px"
-            }}
-          >
-            {price}
-          </Typography>
-          <Button 
-            variant="contained" 
-            disableElevation
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/event/${id}`);
-            }}
-            sx={{ 
-              bgcolor: "#000", 
-              color: "#fff",
-              borderRadius: "12px",
-              textTransform: "none",
-              fontSize: "0.95rem",
-              fontWeight: 700,
-              px: 3,
-              py: 1.1,
-              "&:hover": {
-                bgcolor: "#222"
-              }
-            }}
-          >
-            View Details
-          </Button>
+          {price && (
+            <Typography
+              sx={{
+                fontWeight: 800,
+                fontSize: '1rem',
+                color: '#2dd4bf',
+                letterSpacing: '-0.5px',
+              }}
+            >
+              {price}
+            </Typography>
+          )}
         </Stack>
-      </CardContent>
+      </Box>
     </Card>
   );
 };

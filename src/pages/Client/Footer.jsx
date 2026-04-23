@@ -20,14 +20,14 @@ import {
 
 const Footer = () => {
   return (
-    <Box sx={{ bgcolor: '#0f172a', color: 'white', pt: 8, pb: 4, mt: 'auto' }}>
+    <Box sx={{ bgcolor: '#060606', color: 'white', pt: 8, pb: 4, mt: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           <Grid item xs={12} md={4}>
-            <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center' }}>
-              <Box component="span" sx={{ bgcolor: 'primary.main', color: 'white', px: 1, borderRadius: 1.5, mr: 0.5 }}>E</Box>
-              VENTUI
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem', color: '#fff' }}>V</Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>VeNTUI</Typography>
+            </Box>
             <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)', mb: 3, maxWidth: '300px' }}>
               The world's leading event booking platform, connecting millions of users with the most incredible experiences.
             </Typography>
@@ -82,7 +82,7 @@ const Footer = () => {
         
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.4)' }}>
-            © {new Date().getFullYear()} EVENTUI. All rights reserved.
+            © {new Date().getFullYear()} VeNTUI. All rights reserved.
           </Typography>
         </Box>
       </Container>
