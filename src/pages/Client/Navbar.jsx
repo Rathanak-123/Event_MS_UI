@@ -66,7 +66,6 @@ const Navbar = () => {
 
   const navLinks = [
     { title: t('navbar.browse_events'), path: '/' },
-    { title: t('navbar.categories'), path: '#' },
     { title: t('navbar.my_bookings'), path: '/my-bookings' },
   ];
 

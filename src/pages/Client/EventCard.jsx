@@ -15,6 +15,7 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import { getImageUrl } from '../../utils/imageUtils';
 import { getPaginatedTickets } from '../../api/ticket.api';
+import StatusBadge from '../../components/StatusBadge';
 
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
@@ -93,7 +94,14 @@ const EventCard = ({ event }) => {
   return (
     <Card
       elevation={0}
-      onClick={() => navigate(`/event/${id}`)}
+      onClick={() => {
+        if (event.status?.toLowerCase() === 'ongoing' || event.status?.toLowerCase() === 'completed') {
+          // Still allow viewing the event, but the buttons inside are already disabled
+          navigate(`/event/${id}`);
+        } else {
+          navigate(`/event/${id}`);
+        }
+      }}
       sx={{
         position: 'relative',
         height: '100%',
@@ -155,6 +163,11 @@ const EventCard = ({ event }) => {
           />
         )}
 
+        {/* Status Badge top-right (shifted left of bookmark) */}
+        <Box sx={{ position: 'absolute', top: 12, right: 48 }}>
+          <StatusBadge status={event.status} />
+        </Box>
+
         {/* Bookmark top-right */}
         <IconButton
           onClick={(e) => { e.stopPropagation(); setSaved((s) => !s); }}
@@ -177,6 +190,36 @@ const EventCard = ({ event }) => {
             <BookmarkBorderIcon sx={{ fontSize: 16 }} />
           )}
         </IconButton>
+        
+        {/* Event Begun Overlay */}
+        {(event.status?.toLowerCase() === 'ongoing' || 
+          event.status?.toLowerCase() === 'completed' || 
+          (event.event_date && new Date(event.event_date) < new Date())) && (
+          <Box sx={{ 
+            position: 'absolute', 
+            inset: 0, 
+            bgcolor: 'rgba(0,0,0,0.6)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            zIndex: 2,
+            backdropFilter: 'blur(2px)'
+          }}>
+            <Typography sx={{ 
+              color: '#fff', 
+              fontWeight: 900, 
+              textTransform: 'uppercase', 
+              letterSpacing: '2px',
+              border: '2px solid #fff',
+              px: 2,
+              py: 1,
+              borderRadius: '8px',
+              fontSize: '0.8rem'
+            }}>
+              {(event.status?.toLowerCase() === 'ongoing' || (event.event_date && new Date(event.event_date) < new Date() && event.status?.toLowerCase() !== 'completed')) ? 'Ongoing' : 'Completed'}
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Content */}

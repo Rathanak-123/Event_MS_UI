@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
-  Paper,
   Typography,
+  Button,
   TextField,
   InputAdornment,
-  Button,
-  MenuItem,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -15,376 +13,306 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  TablePagination,
+  Avatar,
   Stack,
+  MenuItem,
+  TablePagination,
+  useMediaQuery,
+  useTheme,
+  CircularProgress,
+  Alert,
+  Grid,
+  Tooltip,
 } from "@mui/material";
-import { Search, Visibility, Edit, Delete, Refresh } from "@mui/icons-material";
-import { getPaginatedEvents, deleteEvent } from "../../../api/events.api";
-
+import {
+  Search as SearchIcon,
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  FilterList as FilterIcon,
+  Visibility as ViewIcon,
+} from "@mui/icons-material";
+import { useNavigate, Outlet } from "react-router-dom";
+import { getPaginatedEvents, createEvent, updateEvent, deleteEvent } from "../../../api/events.api";
+import StatusBadge from "../../../components/StatusBadge";
+import EventModal from "../../../components/EventModal";
 import { getImageUrl } from "../../../utils/imageUtils";
 
-
-export default function EventList() {
+const EventList = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
-  const location = useLocation();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const [searchInput, setSearchInput] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [sortBy, setSortBy] = useState("event_name");
-  const [sortOrder, setSortOrder] = useState("asc");
-
-  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(0); // TablePagination uses 0-based indexing
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalRows, setTotalRows] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
-
-  const showSnackbar = (message, severity = "success") => {
-    setSnackbar({
-      open: true,
-      message,
-      severity,
-    });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
-
-
-
-  const fetchEvents = async (
-    customPage = page,
-    customRowsPerPage = rowsPerPage,
-    customSearch = searchTerm,
-    customSortBy = sortBy,
-    customSortOrder = sortOrder,
-  ) => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
+      const filters = statusFilter !== "all" ? { status: statusFilter } : {};
       const data = await getPaginatedEvents({
-        page: customPage + 1,
-        limit: customRowsPerPage,
-        sort_by: customSortBy,
-        sort_order: customSortOrder,
-        search: customSearch,
-        filters: {},
+        page: page + 1, // API expects 1-based indexing
+        limit: rowsPerPage,
+        search: searchQuery,
+        filters,
       });
-
-      const items = data?.items || data?.results || data?.data || [];
-      const total =
-        data?.total || data?.count || data?.total_items || items.length || 0;
-
-      setEvents(Array.isArray(items) ? items : []);
-      setTotalRows(total);
-      console.log("event data:", data?.data);
-    } catch (error) {
-      console.error(error);
-      setEvents([]);
-      setTotalRows(0);
-      showSnackbar("Failed to load events", "error");
+      
+      const items = data?.items || data?.results || data?.data || (Array.isArray(data) ? data : []);
+      setEvents(items);
+      setTotalItems(data?.total || data?.count || data?.total_items || items.length || 0);
+      setError(null);
+    } catch (err) {
+      console.error("Failed to fetch events:", err);
+      setError("Failed to load events. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, searchQuery, statusFilter]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [location.pathname, page, rowsPerPage]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchEvents();
+    }, 500);
 
-  const handleSearch = () => {
-    setPage(0);
-    setSearchTerm(searchInput);
-    fetchEvents(0, rowsPerPage, searchInput, sortBy, sortOrder);
-  };
-
-  const handleReset = () => {
-    setSearchInput("");
-    setSearchTerm("");
-    setSortBy("event_name");
-    setSortOrder("asc");
-    setPage(0);
-    fetchEvents(0, rowsPerPage, "", "event_name", "asc");
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-
-    try {
-      await deleteEvent(id);
-      setEvents((prev) => prev.filter((event) => event.id !== id));
-      showSnackbar("Event deleted successfully");
-    } catch (error) {
-      console.error("Delete failed:", error?.response?.data || error);
-      showSnackbar("Delete failed", "error");
-    }
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [fetchEvents]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    const newSize = parseInt(event.target.value, 10);
-    setRowsPerPage(newSize);
+    setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  const handleSortByChange = (e) => {
-    const value = e.target.value;
-    setSortBy(value);
-    setPage(0);
-    fetchEvents(0, rowsPerPage, searchTerm, value, sortOrder);
+  const handleOpenCreateModal = () => {
+    setEditingEvent(null);
+    setIsModalOpen(true);
   };
 
-  const handleSortOrderChange = (e) => {
-    const value = e.target.value;
-    setSortOrder(value);
-    setPage(0);
-    fetchEvents(0, rowsPerPage, searchTerm, sortBy, value);
+  const handleOpenEditModal = (event) => {
+    setEditingEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveEvent = async (eventData) => {
+    try {
+      if (editingEvent) {
+        await updateEvent(editingEvent.id, eventData);
+      } else {
+        await createEvent(eventData);
+      }
+      fetchEvents();
+    } catch (err) {
+      console.error("Failed to save event:", err);
+      throw err;
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        await deleteEvent(id);
+        fetchEvents();
+      } catch (err) {
+        console.error("Failed to delete event:", err);
+      }
+    }
   };
 
   return (
-    <Box>
-      <Typography variant="h4" fontWeight="bold" mb={3}>
-        Event Management
-      </Typography>
+    <Box sx={{ p: 3 }}>
+      {/* Header */}
+      <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
+            Event Management
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage all system events, schedules, and statuses
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleOpenCreateModal}
+          sx={{ borderRadius: 2, px: 3, fontWeight: 700 }}
+        >
+          Add New Event
+        </Button>
+      </Stack>
 
-      <Paper
-        elevation={0}
-        sx={{
-          p: 3,
-          mb: 3,
-          borderRadius: 3,
-          border: "1px solid #eaeaea",
-        }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={2}
-          alignItems={{ xs: "stretch", md: "center" }}
-          justifyContent="space-between">
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2}
-            sx={{ flex: 1 }}>
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search event..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSearch();
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(0);
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search />
+                    <SearchIcon color="action" />
                   </InputAdornment>
                 ),
+                sx: { borderRadius: 2 }
               }}
             />
-
+          </Grid>
+          <Grid item xs={12} md={3}>
             <TextField
+              fullWidth
               select
               size="small"
-              label="Sort By"
-              value={sortBy}
-              onChange={handleSortByChange}
-              sx={{ minWidth: 170 }}>
-              <MenuItem value="event_name">Event Name</MenuItem>
-              <MenuItem value="id">ID</MenuItem>
-              <MenuItem value="event_date">Event Date</MenuItem>
-              <MenuItem value="status">Status</MenuItem>
+              label="Status"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(0);
+              }}
+              InputProps={{
+                sx: { borderRadius: 2 }
+              }}
+            >
+              <MenuItem value="all">All Statuses</MenuItem>
+              <MenuItem value="upcoming">Upcoming</MenuItem>
+              <MenuItem value="ongoing">Ongoing</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+              <MenuItem value="cancelled">Cancelled</MenuItem>
             </TextField>
-
-            <TextField
-              select
-              size="small"
-              label="Sort Order"
-              value={sortOrder}
-              onChange={handleSortOrderChange}
-              sx={{ minWidth: 160 }}>
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
-            </TextField>
-
-            <Button
-              variant="contained"
-              onClick={handleSearch}
-              sx={{ minWidth: 120 }}>
-              Search
-            </Button>
-
-            <Button
-              variant="outlined"
-              startIcon={<Refresh />}
-              onClick={handleReset}
-              sx={{ minWidth: 120 }}>
-              Reset
-            </Button>
-          </Stack>
-
-          <Button variant="contained" onClick={() => navigate("add")}>
-            Add Event
-          </Button>
-        </Stack>
+          </Grid>
+        </Grid>
       </Paper>
 
-      <Paper
-        elevation={0}
-        sx={{
-          borderRadius: 3,
-          border: "1px solid #eaeaea",
-          overflow: "hidden",
-        }}>
-        {loading && events.length === 0 ? (
-          <Box display="flex" justifyContent="center" py={6}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Table & Pagination Container */}
+      {!loading || events.length > 0 ? (
+        <Paper sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ bgcolor: "rgba(0,0,0,0.02)" }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Event</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Category & Venue</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {events.map((event) => (
+                  <TableRow key={event.id} hover>
+                    <TableCell>{event.id}</TableCell>
                     <TableCell>
-                      <strong>ID</strong>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar
+                          src={getImageUrl(event.image)}
+                          variant="rounded"
+                          sx={{ width: 40, height: 40, borderRadius: 1.5 }}
+                        />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {event.event_name}
+                        </Typography>
+                      </Stack>
                     </TableCell>
                     <TableCell>
-                      <strong>Image</strong>
+                      <Typography variant="body2">{event.category?.category_name || "—"}</Typography>
+                      <Typography variant="caption" color="text.secondary">{event.venue?.name || "—"}</Typography>
                     </TableCell>
                     <TableCell>
-                      <strong>Event Name</strong>
+                      <Typography variant="body2">{event.event_date}</Typography>
+                      <Typography variant="caption" color="text.secondary">{event.start_time}</Typography>
                     </TableCell>
                     <TableCell>
-                      <strong>Date</strong>
+                      <StatusBadge status={event.status} />
                     </TableCell>
-                    <TableCell>
-                      <strong>Category</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Venue</strong>
-                    </TableCell>
-                    <TableCell>
-                      <strong>Status</strong>
-                    </TableCell>
-                    <TableCell align="center">
-                      <strong>Actions</strong>
+                    <TableCell align="right">
+                      <Tooltip title="View Details">
+                        <IconButton onClick={() => navigate(`${event.id}`)} size="small" color="info">
+                          <ViewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit">
+                        <IconButton onClick={() => handleOpenEditModal(event)} size="small" color="primary">
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton onClick={() => handleDeleteEvent(event.id)} size="small" color="error">
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {events.map((event) => (
-                    <TableRow key={event.id} hover>
-                      <TableCell>{event.id}</TableCell>
-
-                      <TableCell>
-                        {event.image ? (
-                          <Box
-                            component="img"
-                            src={getImageUrl(
-                              typeof event.image === "string"
-                                ? event.image
-                                : event.image?.url || event.image?.path || ""
-                            )}
-                            alt={event.event_name}
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = "";
-                              e.currentTarget.style.display = "none";
-                              if (e.currentTarget.parentElement) {
-                                e.currentTarget.parentElement.textContent = "—";
-                              }
-                            }}
-                            sx={{
-                              width: 60,
-                              height: 45,
-                              objectFit: "cover",
-                              borderRadius: 1,
-                              border: "1px solid #ddd",
-                            }}
-                          />
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-
-                      <TableCell>{event.event_name || "—"}</TableCell>
-                      <TableCell>{event.event_date || "—"}</TableCell>
-                      <TableCell>
-                        {event.category?.category_name || "—"}
-                      </TableCell>
-                      <TableCell>{event.venue?.name || "—"}</TableCell>
-                      <TableCell>{event.status || "—"}</TableCell>
-
-                      <TableCell align="center">
-                        <IconButton onClick={() => navigate(`${event.id}`)}>
-                          <Visibility color="info" />
-                        </IconButton>
-
-                        <IconButton
-                          onClick={() => navigate(`edit/${event.id}`)}>
-                          <Edit color="primary" />
-                        </IconButton>
-
-                        <IconButton onClick={() => handleDelete(event.id)}>
-                          <Delete color="error" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-
-                  {!loading && events.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={8} align="center">
-                        No events found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
+                ))}
+                {events.length === 0 && !loading && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <Typography color="text.secondary">No events found.</Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          
+          {!loading && (
             <TablePagination
+              rowsPerPageOptions={[5, 10, 25, 50]}
               component="div"
-              count={totalRows}
+              count={totalItems}
+              rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              sx={{
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'rgba(0,0,0,0.01)'
+              }}
             />
-          </>
-        )}
-      </Paper>
+          )}
+        </Paper>
+      ) : (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+          <CircularProgress />
+        </Box>
+      )}
 
+      {/* Modal */}
+      <EventModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveEvent}
+        event={editingEvent}
+      />
+
+      {/* For detail view or other nested routes */}
       <Outlet />
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}>
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled">
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
-}
+};
+
+export default EventList;

@@ -5,77 +5,119 @@ import {
   Paper,
   Stack,
   IconButton,
-  Button,
-  Divider,
-  alpha
+  alpha,
+  Avatar,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
-  ConfirmationNumber as TicketIcon
+  ConfirmationNumber as TicketIcon,
+  PersonOutline as PersonIcon,
+  StarOutline as StarIcon,
 } from '@mui/icons-material';
 
 const TicketSelector = ({ tickets = [], selectedTickets = {}, onQuantityChange }) => {
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-        <TicketIcon sx={{ mr: 1, color: 'primary.main' }} />
+      <Typography variant="h6" sx={{ mb: 3, fontWeight: 800, display: 'flex', alignItems: 'center', color: '#fff' }}>
+        <Box sx={{ width: 24, height: 24, bgcolor: '#0d9488', borderRadius: 1, mr: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <TicketIcon sx={{ fontSize: 14, color: '#fff' }} />
+        </Box>
         Select Tickets
       </Typography>
       
-      <Stack spacing={2}>
-        {tickets.map((ticket) => {
+      <Stack spacing={2.5}>
+        {tickets.map((ticket, index) => {
           const quantity = selectedTickets[ticket.id] || 0;
           
-          // Calculate true available quantity by subtracting sold tickets
-          const totalQty = ticket.quantity ?? 100;
+          const totalQty = ticket.quantity ?? 1000;
           const soldQty = ticket.sold ?? 0;
           const availableQty = ticket.available_quantity ?? Math.max(0, totalQty - soldQty);
-          
           const isSoldOut = availableQty <= 0;
+
+          // Alternate icons for visual variety like the screenshot
+          const Icon = index % 2 === 0 ? PersonIcon : StarIcon;
+          const iconColor = index % 2 === 0 ? '#2dd4bf' : '#fbbf24';
 
           return (
             <Paper
               key={ticket.id}
-              variant="outlined"
+              elevation={0}
               sx={{
-                p: 2,
-                borderRadius: 3,
-                borderColor: quantity > 0 ? 'primary.main' : 'divider',
-                bgcolor: quantity > 0 ? alpha('#0f766e', 0.02) : 'background.paper',
-                transition: 'all 0.2s ease'
+                p: 2.5,
+                borderRadius: '16px',
+                border: '1px solid',
+                borderColor: quantity > 0 ? '#2dd4bf' : 'rgba(255,255,255,0.06)',
+                bgcolor: 'rgba(255,255,255,0.02)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  bgcolor: 'rgba(255,255,255,0.04)',
+                  borderColor: quantity > 0 ? '#2dd4bf' : 'rgba(255,255,255,0.12)',
+                }
               }}
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                {/* Icon Avatar */}
+                <Avatar 
+                  sx={{ 
+                    width: 48, 
+                    height: 48, 
+                    bgcolor: 'rgba(255,255,255,0.05)', 
+                    color: iconColor,
+                    border: '1px solid rgba(255,255,255,0.08)'
+                  }}
+                >
+                  <Icon />
+                </Avatar>
+
+                {/* Details */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#fff', fontSize: '1rem', mb: 0.2 }}>
                     {ticket.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {ticket.description || 'General Admission'}
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.45)', display: 'block', mb: 0.5 }}>
+                    {ticket.description || 'Access to main event area'}
                   </Typography>
-                  <Typography variant="h6" color="primary.main" sx={{ mt: 1, fontWeight: 800 }}>
-                    ${Number(ticket.price).toFixed(2)}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <PersonIcon sx={{ fontSize: 14, color: 'rgba(255,255,255,0.3)' }} />
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+                      {availableQty} remaining
+                    </Typography>
+                  </Box>
                 </Box>
 
-                <Box sx={{ textAlign: 'right' }}>
+                {/* Price */}
+                <Typography variant="h6" sx={{ fontWeight: 900, color: '#2dd4bf', minWidth: 80, textAlign: 'right' }}>
+                  ${Number(ticket.price).toFixed(2)}
+                </Typography>
+
+                {/* Controls */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
                   {isSoldOut ? (
-                    <Typography color="error" variant="button" sx={{ fontWeight: 700 }}>
+                    <Typography sx={{ color: '#ef4444', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase' }}>
                       Sold Out
                     </Typography>
                   ) : (
-                    <Stack direction="row" alignItems="center" spacing={2}>
+                    <Stack 
+                      direction="row" 
+                      alignItems="center" 
+                      sx={{ 
+                        bgcolor: 'rgba(0,0,0,0.3)', 
+                        borderRadius: '12px', 
+                        p: 0.5,
+                        border: '1px solid rgba(255,255,255,0.08)'
+                      }}
+                    >
                       <IconButton 
                         size="small" 
                         onClick={() => onQuantityChange(ticket.id, Math.max(0, quantity - 1))}
                         disabled={quantity === 0}
-                        sx={{ border: '1px solid', borderColor: 'divider' }}
+                        sx={{ color: 'rgba(255,255,255,0.5)', '&:hover': { color: '#fff' } }}
                       >
                         <RemoveIcon fontSize="small" />
                       </IconButton>
                       
-                      <Typography sx={{ minWidth: '24px', textAlign: 'center', fontWeight: 700 }}>
+                      <Typography sx={{ minWidth: '32px', textAlign: 'center', fontWeight: 800, color: '#fff', fontSize: '0.9rem' }}>
                         {quantity}
                       </Typography>
                       
@@ -83,14 +125,14 @@ const TicketSelector = ({ tickets = [], selectedTickets = {}, onQuantityChange }
                         size="small" 
                         onClick={() => onQuantityChange(ticket.id, Math.min(availableQty, quantity + 1))}
                         disabled={quantity >= availableQty}
-                        sx={{ border: '1px solid', borderColor: 'divider', color: 'primary.main' }}
+                        sx={{ color: '#fff', '&:hover': { color: '#2dd4bf' } }}
                       >
                         <AddIcon fontSize="small" />
                       </IconButton>
                     </Stack>
                   )}
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                    {availableQty} remaining {soldQty > 0 && `(${soldQty} sold)`}
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem', fontWeight: 600 }}>
+                    {soldQty} sold
                   </Typography>
                 </Box>
               </Box>

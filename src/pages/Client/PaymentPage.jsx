@@ -7,25 +7,22 @@ import {
   Paper,
   Stack,
   Button,
-  Divider,
   alpha,
-  useTheme,
+  CircularProgress,
   Alert,
-  CircularProgress
+  Avatar,
 } from '@mui/material';
 import {
   ChevronLeft as BackIcon,
-  CheckCircle as CheckIcon,
-  Info as InfoIcon
+  ShieldOutlined as ShieldIcon,
+  Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { generateKHQR, checkPaymentByMD5 } from '../../api/payment.api';
 import PaymentQR from './PaymentQR';
 import { generateEventTicket } from '../../api/eventTicket.api';
 
-
 const PaymentPage = () => {
-  const theme = useTheme();
   const { bookingId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -44,8 +41,6 @@ const PaymentPage = () => {
       setLoading(true);
       try {
         const data = await generateKHQR(bookingId, totalAmount);
-        
-        // Handle various backend response shapes
         const responseData = data?.data || data;
         const img = responseData?.qr_image || responseData?.qr_data || responseData?.qr_code;
         const hash = responseData?.md5 || responseData?.hash;
@@ -66,26 +61,16 @@ const PaymentPage = () => {
     if (checkingStatus) return;
     setCheckingStatus(true);
     try {
-        // Automatically generate the event ticket
         await generateEventTicket(bookingId);
-        
-        // Navigate to success page
-        navigate('/success', { 
-            state: { 
-                bookingId, 
-                totalAmount,
-                eventName
-            } 
-        });
+        navigate('/success', { state: { bookingId, totalAmount, eventName } });
     } catch (err) {
         console.error("Failed to generate ticket:", err);
-        setError("Payment confirmation failed. Please try again or contact support.");
+        setError("Payment confirmation failed. Please try again.");
     } finally {
         setCheckingStatus(false);
     }
-  }, [bookingId, totalAmount, eventName, navigate]);
+  }, [bookingId, totalAmount, eventName, navigate, checkingStatus]);
 
-  // Polling logic
   useEffect(() => {
     let intervalId;
     if (md5 && !isSuccess) {
@@ -104,60 +89,81 @@ const PaymentPage = () => {
           if (isPaid) {
             clearInterval(intervalId);
             setIsSuccess(true);
-            handleDone(); // Trigger ticket generation and redirect
+            handleDone();
           }
-        } catch (error) {
-          console.error("Polling error:", error);
-        }
+        } catch (error) { console.error("Polling error:", error); }
       }, 3000);
     }
     return () => clearInterval(intervalId);
   }, [md5, isSuccess, handleDone]);
 
-
   if (loading && !qrData) {
     return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Box sx={{ textAlign: 'center' }}>
-        <CircularProgress size={60} />
-        <Typography variant="h6" sx={{ mt: 3, fontWeight: 700 }}>Generating Your KHQR...</Typography>
+      <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress size={60} sx={{ color: '#2dd4bf' }} />
+          <Typography variant="h6" sx={{ mt: 3, fontWeight: 800, color: '#fff' }}>Generating Secure KHQR...</Typography>
+        </Box>
       </Box>
-    </Box>
     );
   }
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pt: 12, pb: 10 }}>
-      
-      <Container maxWidth="md" sx={{ py: 12 }}>
-        <Typography variant="h3" sx={{ fontWeight: 900, textAlign: 'center', mb: 1, letterSpacing: '-1.5px' }}>
-          Complete Payment
-        </Typography>
-        <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ mb: 8, maxWidth: '500px', mx: 'auto' }}>
-            Your booking is reserved! Please scan the QR code below to finalize your purchase.
-        </Typography>
+    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', pt: 12, pb: 10, color: '#fff' }}>
+      <Container maxWidth="md">
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Avatar sx={{ bgcolor: 'rgba(13, 148, 136, 0.1)', color: '#2dd4bf', width: 64, height: 64, mx: 'auto', mb: 3 }}>
+            <PaymentIcon sx={{ fontSize: 32 }} />
+          </Avatar>
+          <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, letterSpacing: '-2px' }}>
+            Complete Payment
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.45)', maxWidth: '500px', mx: 'auto' }}>
+            Your spot for <strong>{eventName}</strong> is reserved. Please scan the QR code to finalize your booking.
+          </Typography>
+        </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 6, borderRadius: 3 }}>{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 6, borderRadius: '16px', bgcolor: 'rgba(239,68,68,0.1)', color: '#fca5a5' }}>{error}</Alert>}
 
         <Grid container justifyContent="center">
-          <Grid item xs={12} sm={10} md={8} lg={6}>
-            <PaymentQR 
-              qrData={qrData} 
-              amount={totalAmount} 
-              bookingId={bookingId}
-              loading={loading}
-            />
-            
-            <Stack spacing={3} sx={{ mt: 4 }}>
-              <Button 
-                  fullWidth 
-                  variant="text" 
-                  onClick={() => navigate(-1)}
-                  sx={{ color: 'text.secondary', fontWeight: 800 }}
-              >
-                  Cancel & Go Back
-              </Button>
-            </Stack>
+          <Grid item xs={12} sm={10} md={7}>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 4, 
+                borderRadius: '32px', 
+                bgcolor: 'rgba(255,255,255,0.02)', 
+                border: '1px solid rgba(255,255,255,0.06)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              {/* Decorative Glow */}
+              <Box sx={{ position: 'absolute', top: -50, right: -50, width: 150, height: 150, bgcolor: 'rgba(45,212,191,0.05)', borderRadius: '50%', filter: 'blur(40px)' }} />
+              
+              <PaymentQR 
+                qrData={qrData} 
+                amount={totalAmount} 
+                bookingId={bookingId}
+                loading={loading}
+              />
+              
+              <Stack spacing={2} sx={{ mt: 4, alignItems: 'center' }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <ShieldIcon sx={{ fontSize: 16 }} />
+                  <Typography variant="caption" sx={{ fontWeight: 700 }}>SECURE ENCRYPTED TRANSACTION</Typography>
+                </Stack>
+                <Button 
+                    fullWidth 
+                    variant="text" 
+                    onClick={() => navigate(-1)}
+                    startIcon={<BackIcon />}
+                    sx={{ color: 'rgba(255,255,255,0.45)', fontWeight: 800, textTransform: 'none', '&:hover': { color: '#fff' } }}
+                >
+                    Cancel & Go Back
+                </Button>
+              </Stack>
+            </Paper>
           </Grid>
         </Grid>
       </Container>

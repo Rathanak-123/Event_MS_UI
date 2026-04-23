@@ -10,18 +10,17 @@ import {
   Stack,
   Divider,
   alpha,
-  useTheme,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
+  Avatar,
 } from '@mui/material';
 import {
   ChevronLeft as BackIcon,
-  Event as EventIcon,
+  CalendarToday as CalendarIcon,
   LocationOn as LocationIcon,
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Phone as PhoneIcon
+  ShieldOutlined as ShieldIcon,
+  EmailOutlined as EmailIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getEventById } from '../../api/events.api';
@@ -31,10 +30,9 @@ import { generateKHQR } from '../../api/payment.api';
 import BookingQRCode from './BookingQRCode';
 import { useAuth } from '../../context/AuthContext';
 import { generateEventTicket } from '../../api/eventTicket.api';
-
+import { getImageUrl } from '../../utils/imageUtils';
 
 const BookingPage = () => {
-  const theme = useTheme();
   const { eventId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -47,11 +45,8 @@ const BookingPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   
-  const [formData, setFormData] = useState({
-    email: '',
-  });
+  const [formData, setFormData] = useState({ email: '' });
 
-  // Auto-fill email from logged in profile
   useEffect(() => {
     const profileEmail = clientUser?.email || '';
     if (profileEmail) {
@@ -78,8 +73,6 @@ const BookingPage = () => {
         
         const rawEvent = eventData?.data || eventData;
         const tickets = ticketData?.items || ticketData?.results || ticketData?.data || (Array.isArray(ticketData) ? ticketData : []);
-        
-        // Attach tickets to event so calculateTotal works
         setEvent({ ...rawEvent, tickets });
       } catch (err) {
         console.error(err);
@@ -91,10 +84,6 @@ const BookingPage = () => {
     fetchData();
   }, [eventId]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   const calculateTotal = () => {
     if (!event || !event.tickets) return 0;
     return Object.keys(selectedTickets).reduce((sum, id) => {
@@ -103,12 +92,13 @@ const BookingPage = () => {
     }, 0);
   };
 
+  const subtotal = calculateTotal();
+  const totalAmount = subtotal;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // Mocking multiple ticket logic or choosing the first one as primary
-      // Real implementation would depend on backend schema
       const ticketIds = Object.keys(selectedTickets).filter(id => selectedTickets[id] > 0);
       const primaryTicketId = ticketIds[0];
       const quantity = selectedTickets[primaryTicketId];
@@ -121,10 +111,7 @@ const BookingPage = () => {
       };
 
       const response = await createBooking(bookingData);
-      
-      // Capture total synchronously before any async operations change state
-      const total = calculateTotal();
-      setBookingTotal(total);
+      setBookingTotal(totalAmount);
 
       const newBookingId = response.id || response.data?.id;
       setCreatedBookingId(newBookingId);
@@ -132,26 +119,14 @@ const BookingPage = () => {
       setQrModalOpen(true);
       setQrLoading(true);
 
-      // Attempt to load KHQR automatically
       try {
-        const khqrRes = await generateKHQR(newBookingId, total);
-        
-        // Store MD5 for polling
-        const md5 = khqrRes?.data?.md5 || khqrRes?.md5 || khqrRes?.data?.md5_hash || khqrRes?.md5_hash;
+        const khqrRes = await generateKHQR(newBookingId, totalAmount);
+        const md5 = khqrRes?.data?.md5 || khqrRes?.md5;
         setPaymentMd5(md5);
-
-        // Handle both nested and non-nested response shapes
-        const img =
-          khqrRes?.data?.qr_image ||
-          khqrRes?.qr_image ||
-          khqrRes?.data?.qr_code ||
-          khqrRes?.qr_code ||
-          khqrRes?.data?.qr_data ||
-          khqrRes?.qr_data;
+        const img = khqrRes?.data?.qr_image || khqrRes?.qr_image || khqrRes?.data?.qr_code || khqrRes?.qr_code;
         setQrData(img || null);
       } catch (err) {
         console.error("Failed to generate QR:", err);
-        setQrData(null);
         setSnackbar({ open: true, message: 'Could not fetch payment QR.', severity: 'warning' });
       } finally {
         setQrLoading(false);
@@ -167,191 +142,219 @@ const BookingPage = () => {
 
   const handlePaymentSuccess = useCallback(async () => {
     setQrModalOpen(false);
-    
-    // Automatically generate the event ticket upon payment success
     try {
         const idToUse = bookingIdRef.current || createdBookingId;
         await generateEventTicket(idToUse);
-    } catch (err) {
-        console.error("Auto-generation of ticket failed:", err);
-        // We still proceed to success page as the booking is paid
-    }
+    } catch (err) { console.error(err); }
 
-    setSnackbar({ 
-      open: true, 
-      message: 'Payment Successful! Your tickets are ready.', 
-      severity: 'success' 
-    });
-
-    const idToUse = bookingIdRef.current || createdBookingId;
-    // Navigate to success page or my bookings after a slight delay
+    setSnackbar({ open: true, message: 'Payment Successful!', severity: 'success' });
     setTimeout(() => {
         navigate('/success', { 
             state: { 
-                bookingId: idToUse, 
+                bookingId: bookingIdRef.current || createdBookingId, 
                 totalAmount: bookingTotal,
-                eventName: event?.event_name || event?.title,
-                booking: {
-                    id: idToUse,
-                    event: event,
-                    customer: clientUser,
-                    total_amount: bookingTotal,
-                    status: 'Confirmed'
-                }
+                eventName: event?.event_name,
+                booking: { id: bookingIdRef.current || createdBookingId, event, customer: clientUser, total_amount: bookingTotal, status: 'Confirmed' }
             } 
         });
     }, 2000);
-}, [createdBookingId, bookingTotal, event, navigate, clientUser]);
+  }, [createdBookingId, bookingTotal, event, navigate, clientUser]);
 
   const handleCloseQR = useCallback(() => {
     setQrModalOpen(false);
-    // Optionally navigate away after scanning
-    const idToUse = bookingIdRef.current || createdBookingId;
-    navigate(`/payment/${idToUse}`, { 
-      state: { 
-          totalAmount: bookingTotal,
-          eventName: event?.event_name || event?.title
-      } 
-    });
-}, [createdBookingId, bookingTotal, event, navigate]);
+    navigate(`/payment/${bookingIdRef.current || createdBookingId}`, { state: { totalAmount: bookingTotal, eventName: event?.event_name } });
+  }, [createdBookingId, bookingTotal, event, navigate]);
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
-        <CircularProgress />
+      <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <CircularProgress color="primary" />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pt: 12, pb: 10 }}>
+    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', pt: 12, pb: 10, color: '#fff' }}>
       <Container maxWidth="lg">
         <Button 
           startIcon={<BackIcon />} 
           onClick={() => navigate(-1)}
-          sx={{ mb: 4, fontWeight: 700 }}
+          sx={{ mb: 4, fontWeight: 800, color: 'rgba(255,255,255,0.6)', '&:hover': { color: '#fff' } }}
         >
           Back to Event
         </Button>
 
         <Grid container spacing={6}>
-          <Grid item xs={12} md={8}>
+          {/* Left: Contact Info */}
+          <Grid item xs={12} md={7}>
             <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, letterSpacing: '-1.5px' }}>Check Out</Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 6 }}>Complete your booking details to secure your tickets.</Typography>
+            <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.45)', mb: 6 }}>
+              Secure your spot at the ultimate event. Enter your details to proceed.
+            </Typography>
 
-            <Paper elevation={0} sx={{ p: 5, borderRadius: 6, border: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="h5" sx={{ fontWeight: 800, mb: 4 }}>Contact Information</Typography>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 5, 
+                borderRadius: '24px', 
+                bgcolor: 'rgba(255,255,255,0.02)', 
+                border: '1px solid rgba(255,255,255,0.06)' 
+              }}
+            >
+              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 4 }}>
+                <Avatar sx={{ bgcolor: 'rgba(13,148,136,0.1)', color: '#2dd4bf' }}>
+                  <EmailIcon />
+                </Avatar>
+                <Typography variant="h5" sx={{ fontWeight: 800 }}>Contact Information</Typography>
+              </Stack>
+
               <form onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <TextField 
-                        fullWidth 
-                        label="Gmail Address" 
-                        name="email"
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={handleChange}
-                        variant="outlined"
-                        InputProps={{
-                          sx: { borderRadius: 3 },
-                          readOnly: !!clientUser?.email,
-                        }}
-                        helperText={clientUser?.email ? 'Auto-filled from your profile' : ''}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sx={{ mt: 2 }}>
-                    <Button 
-                        type="submit" 
-                        variant="contained" 
-                        size="large" 
-                        fullWidth 
-                        disabled={submitting}
-                        sx={{ 
-                            py: 2.5, 
-                            borderRadius: 4, 
-                            fontWeight: 900, 
-                            fontSize: '1.1rem',
-                            boxShadow: '0 10px 25px rgba(15, 118, 110, 0.3)'
-                        }}
-                    >
-                      {submitting ? <CircularProgress size={24} color="inherit" /> : 'Confirm Booking & Pay'}
-                    </Button>
-                  </Grid>
-                </Grid>
+                <Stack spacing={4}>
+                  <TextField 
+                    fullWidth 
+                    label="Email Address" 
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    variant="outlined"
+                    InputProps={{
+                      sx: { 
+                        borderRadius: '12px', 
+                        bgcolor: 'rgba(255,255,255,0.03)',
+                        '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
+                        '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                        '&.Mui-focused fieldset': { borderColor: '#2dd4bf' },
+                      },
+                      readOnly: !!clientUser?.email,
+                    }}
+                    InputLabelProps={{ sx: { color: 'rgba(255,255,255,0.4)' } }}
+                    helperText={clientUser?.email ? 'Using your verified account email' : ''}
+                    FormHelperTextProps={{ sx: { color: 'rgba(255,255,255,0.3)' } }}
+                  />
+
+                  <Button 
+                    type="submit" 
+                    variant="contained" 
+                    size="large" 
+                    fullWidth 
+                    disabled={submitting}
+                    sx={{ 
+                      py: 2.2, 
+                      borderRadius: '16px', 
+                      fontWeight: 900, 
+                      fontSize: '1.1rem',
+                      bgcolor: '#0d9488',
+                      boxShadow: '0 10px 30px rgba(13,148,136,0.2)',
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: '#0f766e', boxShadow: '0 12px 40px rgba(13,148,136,0.3)' }
+                    }}
+                  >
+                    {submitting ? <CircularProgress size={24} color="inherit" /> : 'Confirm Booking & Pay'}
+                  </Button>
+                </Stack>
               </form>
             </Paper>
+
+            {/* Secure Badge */}
+            <Stack direction="row" spacing={2} sx={{ mt: 4, p: 3, borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', bgcolor: 'rgba(255,255,255,0.01)' }}>
+              <ShieldIcon sx={{ color: '#2dd4bf' }} />
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
+                Your booking is encrypted and secure. By proceeding, you agree to our terms of service and refund policy.
+              </Typography>
+            </Stack>
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <Stack spacing={3}>
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                    p: 4, 
-                    borderRadius: 6, 
-                    border: '1px solid', 
-                    borderColor: 'divider',
-                    bgcolor: alpha(theme.palette.primary.main, 0.02)
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>Order Summary</Typography>
-                
-                <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{event?.event_name || event?.title}</Typography>
-                    <Typography variant="body2" color="text.secondary" display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
-                        <EventIcon fontSize="small" /> {new Date(event?.event_date).toLocaleDateString()}
+          {/* Right: Summary */}
+          <Grid item xs={12} md={5}>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: 4, 
+                borderRadius: '24px', 
+                bgcolor: '#fff', 
+                color: '#000',
+                position: { md: 'sticky' },
+                top: 100
+              }}
+            >
+              <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, letterSpacing: '-0.5px' }}>Order Summary</Typography>
+              
+              <Box sx={{ mb: 4 }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Box 
+                    component="img" 
+                    src={getImageUrl(event?.image)} 
+                    sx={{ width: 80, height: 80, borderRadius: '16px', objectFit: 'cover' }} 
+                  />
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 900, lineHeight: 1.2, mb: 0.8 }}>
+                      {event?.event_name}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-                        <LocationIcon fontSize="small" /> {event?.venue?.name}
-                    </Typography>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Stack spacing={2} sx={{ mb: 3 }}>
-                    {event?.tickets?.filter(t => selectedTickets[t.id] > 0).map(t => (
-                        <Box key={t.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Typography variant="body2">{t.name} x {selectedTickets[t.id]}</Typography>
-                            <Typography variant="body2" fontWeight={700}>${(t.price * selectedTickets[t.id]).toFixed(2)}</Typography>
-                        </Box>
-                    ))}
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <CalendarIcon sx={{ fontSize: 14, color: 'rgba(0,0,0,0.4)' }} />
+                      <Typography variant="caption" sx={{ color: 'rgba(0,0,0,0.5)', fontWeight: 600 }}>
+                        {new Date(event?.event_date).toLocaleDateString()} • {event?.start_time}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <LocationIcon sx={{ fontSize: 14, color: 'rgba(0,0,0,0.4)' }} />
+                      <Typography variant="caption" sx={{ color: 'rgba(0,0,0,0.5)', fontWeight: 600 }}>
+                        {event?.venue?.name || event?.location}
+                      </Typography>
+                    </Stack>
+                  </Box>
                 </Stack>
+              </Box>
 
-                <Divider sx={{ my: 2 }} />
+              <Divider sx={{ mb: 4 }} />
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>Total</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: 'primary.main' }}>
-                        ${calculateTotal().toFixed(2)}
-                    </Typography>
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'rgba(0,0,0,0.4)', letterSpacing: '0.1em', display: 'block', mb: 2.5 }}>
+                  TICKET DETAILS
+                </Typography>
+                <Stack spacing={2}>
+                  {event?.tickets?.filter(t => selectedTickets[t.id] > 0).map(t => (
+                    <Box key={t.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600, color: 'rgba(0,0,0,0.7)' }}>
+                        {t.name} <Box component="span" sx={{ fontWeight: 900, color: '#000', ml: 1 }}>x {selectedTickets[t.id]}</Box>
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 900 }}>
+                        ${(t.price * selectedTickets[t.id]).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+
+              <Box sx={{ mb: 4, pt: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 900 }}>Total Payable</Typography>
+                  <Typography variant="h3" sx={{ fontWeight: 900, color: '#0d9488', letterSpacing: '-2px' }}>
+                    ${totalAmount.toFixed(2)}
+                  </Typography>
                 </Box>
-              </Paper>
-            </Stack>
+              </Box>
+            </Paper>
           </Grid>
         </Grid>
       </Container>
       
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity} sx={{ borderRadius: 3 }}>
-          {snackbar.message}
-        </Alert>
+      <Snackbar open={snackbar.open} autoHideDuration={5000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.severity} sx={{ borderRadius: '12px' }}>{snackbar.message}</Alert>
       </Snackbar>
 
       <BookingQRCode 
         open={qrModalOpen}
         onClose={handleCloseQR}
         qrData={qrData}
-        amount={bookingTotal}
+        amount={totalAmount}
         bookingId={createdBookingId}
         md5={paymentMd5}
         onSuccess={handlePaymentSuccess}
         loading={qrLoading}
-        eventName={event?.event_name || event?.title}
+        eventName={event?.event_name}
       />
     </Box>
   );

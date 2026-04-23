@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -7,24 +7,20 @@ import {
   Button,
   Stack,
   alpha,
-  useTheme,
   Divider
 } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
   Download as DownloadIcon,
   ConfirmationNumber as TicketIcon,
-  ArrowForward as ArrowIcon,
   Home as HomeIcon
 } from '@mui/icons-material';
 import { downloadTicket } from '../../api/booking.api';
 import EventTicketModal from './EventTicketModal';
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 
 const SuccessPage = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { 
@@ -54,21 +50,20 @@ const SuccessPage = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pt: 12, pb: 10 }}>
+    <Box sx={{ bgcolor: '#0a0a0a', minHeight: '100vh', pt: 12, pb: 10, color: '#fff' }}>
       
-      <Container maxWidth="sm" sx={{ py: 20 }}>
+      <Container maxWidth="sm" sx={{ py: 10 }}>
         <Paper 
           elevation={0}
           sx={{ 
               p: { xs: 4, md: 8 }, 
-              borderRadius: 8, 
-              border: '1px solid', 
-              borderColor: 'divider',
+              borderRadius: '32px', 
+              border: '1px solid rgba(255,255,255,0.06)',
               textAlign: 'center',
-              boxShadow: '0 40px 100px rgba(0,0,0,0.08)',
-              bgcolor: 'background.paper',
+              bgcolor: 'rgba(255,255,255,0.02)',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              backdropFilter: 'blur(20px)'
           }}
         >
           {/* Decorative background element */}
@@ -80,7 +75,7 @@ const SuccessPage = () => {
                 width: 300, 
                 height: 300, 
                 borderRadius: '50%', 
-                bgcolor: alpha(theme.palette.primary.main, 0.03),
+                bgcolor: 'rgba(45,212,191,0.05)',
                 zIndex: 0
             }} 
           />
@@ -91,47 +86,47 @@ const SuccessPage = () => {
                     width: 100, 
                     height: 100, 
                     borderRadius: '50%', 
-                    bgcolor: alpha(theme.palette.success.main, 0.1),
-                    color: 'success.main',
+                    bgcolor: 'rgba(45,212,191,0.1)',
+                    color: '#2dd4bf',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     mx: 'auto',
                     mb: 4,
-                    boxShadow: `0 20px 40px ${alpha(theme.palette.success.main, 0.2)}`
+                    boxShadow: '0 20px 40px rgba(45,212,191,0.2)',
+                    border: '1px solid rgba(45,212,191,0.2)'
                 }}
             >
                 <SuccessIcon sx={{ fontSize: 56 }} />
             </Box>
 
-            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, color: 'text.primary', letterSpacing: '-1.5px' }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, mb: 2, color: '#fff', letterSpacing: '-1.5px' }}>
                 Booking Confirmed!
             </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 6, lineHeight: 1.8, fontSize: '1.1rem' }}>
+            <Typography variant="body1" sx={{ mb: 6, lineHeight: 1.8, fontSize: '1.1rem', color: 'rgba(255,255,255,0.6)' }}>
                 Thank you for your purchase! Your spot at <strong>{eventName}</strong> is reserved. 
                 A confirmation has been sent to your email.
             </Typography>
 
             <Box 
                 sx={{ 
-                    bgcolor: alpha(theme.palette.primary.main, 0.05), 
+                    bgcolor: 'rgba(255,255,255,0.03)', 
                     p: 4, 
-                    borderRadius: 6, 
+                    borderRadius: '24px', 
                     mb: 6,
-                    border: '1px dashed',
-                    borderColor: alpha(theme.palette.primary.main, 0.2),
+                    border: '1px dashed rgba(255,255,255,0.1)',
                     textAlign: 'center'
                 }}
             >
-                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, mb: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, mb: 1, display: 'block', color: 'rgba(255,255,255,0.4)' }}>
                     Booking Reference
                 </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 900, color: 'primary.main', mb: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: '#2dd4bf', mb: 2 }}>
                     {bookingId}
                 </Typography>
-                <Divider sx={{ mb: 2, borderColor: alpha(theme.palette.primary.main, 0.1) }} />
-                <Typography variant="body2" color="text.secondary">
-                    Total Paid: <strong>${totalAmount.toFixed(2)}</strong>
+                <Divider sx={{ mb: 2, borderColor: 'rgba(255,255,255,0.05)' }} />
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                    Total Paid: <strong style={{ color: '#fff' }}>${totalAmount.toFixed(2)}</strong>
                 </Typography>
             </Box>
 
@@ -143,12 +138,15 @@ const SuccessPage = () => {
                     onClick={() => setIsTicketModalOpen(true)}
                     startIcon={<TicketIcon />}
                     sx={{ 
-                        borderRadius: 4, 
+                        borderRadius: '16px', 
                         py: 2.5, 
                         fontWeight: 900,
                         fontSize: '1.1rem',
-                        boxShadow: '0 10px 25px rgba(15, 118, 110, 0.3)',
-                        mb: 2
+                        bgcolor: '#0d9488',
+                        boxShadow: '0 10px 25px rgba(13,148,136,0.3)',
+                        mb: 2,
+                        textTransform: 'none',
+                        '&:hover': { bgcolor: '#0f766e' }
                     }}
                 >
                     View E-Ticket
@@ -161,34 +159,35 @@ const SuccessPage = () => {
                     onClick={handleDownloadTicket}
                     startIcon={<DownloadIcon />}
                     sx={{ 
-                        borderRadius: 4, 
+                        borderRadius: '16px', 
                         py: 2, 
                         fontWeight: 900,
                         fontSize: '1rem',
-                        borderColor: 'divider',
-                        color: 'text.primary'
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        textTransform: 'none',
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.2)' }
                     }}
                 >
                     Download PDF Ticket
                 </Button>
 
                 
-                <Stack direction="row" spacing={2}>
+                <Stack direction="row" spacing={2} sx={{ pt: 2 }}>
                     <Button 
-                        variant="outlined" 
+                        variant="text" 
                         fullWidth
                         onClick={() => navigate('/my-bookings')}
-                        startIcon={<TicketIcon />}
-                        sx={{ borderRadius: 3, py: 1.8, fontWeight: 700, borderColor: 'divider', color: 'text.primary' }}
+                        sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 700, textTransform: 'none' }}
                     >
                         My Bookings
                     </Button>
                     <Button 
-                        variant="outlined" 
+                        variant="text" 
                         fullWidth
                         onClick={() => navigate('/')}
                         startIcon={<HomeIcon />}
-                        sx={{ borderRadius: 3, py: 1.8, fontWeight: 700, borderColor: 'divider', color: 'text.primary' }}
+                        sx={{ color: '#fff', fontWeight: 700, textTransform: 'none' }}
                     >
                         Home
                     </Button>
@@ -203,7 +202,6 @@ const SuccessPage = () => {
         booking={booking || { id: bookingId, event: { event_name: eventName } }}
       />
     </Box>
-
   );
 };
 

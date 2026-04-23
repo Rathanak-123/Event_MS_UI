@@ -202,7 +202,7 @@ export default function Dashboard() {
             
             <Box display="flex" flexDirection="column" gap={0.5}>
               {statsData.recentBookings.map((booking, idx) => (
-                <Box key={idx} display="flex" alignItems="center" justifyContent="space-between" py={1.5} sx={{ borderBottom: idx < statsData.recentBookings.length - 1 ? '1px dashed #e2e8f0' : 'none' }}>
+                <Box key={booking.id || idx} display="flex" alignItems="center" justifyContent="space-between" py={1.5} sx={{ borderBottom: idx < statsData.recentBookings.length - 1 ? '1px dashed #e2e8f0' : 'none' }}>
                   <Box display="flex" alignItems="center" gap={2} width="40%">
                     <Avatar sx={{ width: 36, height: 36, bgcolor: '#0f766e' }}>{booking.customer_name?.charAt(0) || booking.customer?.first_name?.charAt(0) || 'C'}</Avatar>
                     <Typography variant="body2" fontWeight="bold" color="#334155" noWrap>

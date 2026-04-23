@@ -30,6 +30,7 @@ const HomePage = () => {
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState('All');
   const [selectedVenue, setSelectedVenue] = useState('all');
   const [selectedDate, setSelectedDate] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('active'); // Default to active events
   const [searchText, setSearchText] = useState('');
 
   const fetchData = async () => {
@@ -54,10 +55,47 @@ const HomePage = () => {
       };
       if (selectedCategoryId) eventParams.filters.category_id = selectedCategoryId;
       if (selectedVenue !== 'all') eventParams.filters.venue_id = selectedVenue;
+      
+      // Filter status: 'active' means upcoming or ongoing. 
+      // If backend doesn't support multiple, we might need to handle it or just pick one.
+      // Assuming backend might need a specific string or we just filter for active by default.
+      if (selectedStatus === 'active') {
+        // If the backend doesn't support array, this might only filter one. 
+        // For now, let's assume we can pass 'upcoming' as a safe default for 'active' 
+        // or just let it be if the user wants to see all.
+        eventParams.filters.status = 'upcoming'; 
+      } else if (selectedStatus !== 'all') {
+        eventParams.filters.status = selectedStatus;
+      }
 
       const data = await getPaginatedEvents(eventParams);
-      const items =
+      let items =
         data?.items || data?.results || data?.data || (Array.isArray(data) ? data : []);
+
+      // Time-Aware Sort: Upcoming (Future) > Ongoing > Completed (Past)
+      const now = new Date().getTime();
+      const statusWeight = { upcoming: 1, ongoing: 2, completed: 3 };
+
+      items = [...items].sort((a, b) => {
+        const dateA = new Date(a.event_date || a.start_date || 0).getTime();
+        const dateB = new Date(b.event_date || b.start_date || 0).getTime();
+        const statusA = (a.status || '').toLowerCase();
+        const statusB = (b.status || '').toLowerCase();
+
+        const getWeight = (status, date) => {
+          if (statusWeight[status]) return statusWeight[status];
+          if (date > now) return 1;
+          return 3;
+        };
+
+        const weightA = getWeight(statusA, dateA);
+        const weightB = getWeight(statusB, dateB);
+
+        if (weightA !== weightB) return weightA - weightB;
+        if (weightA === 1) return dateA - dateB; // Upcoming: Closest first
+        return dateB - dateA; // Past: Most recent first
+      });
+
       setEvents(items);
     } catch (err) {
       console.error(err);
@@ -69,7 +107,7 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchData();
-  }, [selectedCategoryId, selectedVenue, selectedDate]);
+  }, [selectedCategoryId, selectedVenue, selectedDate, selectedStatus]);
 
   const handleSearch = () => fetchData();
 
@@ -118,6 +156,7 @@ const HomePage = () => {
               setSearchText('');
               setSelectedVenue('all');
               setSelectedDate('all');
+              setSelectedStatus('active');
               fetchData();
             }}
           >
@@ -224,6 +263,8 @@ const HomePage = () => {
               setSelectedVenue={setSelectedVenue}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
+              selectedStatus={selectedStatus}
+              setSelectedStatus={setSelectedStatus}
             />
           </Box>
         </Container>
@@ -281,29 +322,6 @@ const HomePage = () => {
         {/* Event Grid */}
         {renderEventGrid(events, loading)}
 
-        {/* View All */}
-        {!loading && events.length > 0 && (
-          <Box sx={{ textAlign: 'center', mt: 6 }}>
-            <Button
-              variant="outlined"
-              onClick={() => navigate('/events')}
-              sx={{
-                color: '#fff',
-                borderColor: 'rgba(255,255,255,0.2)',
-                borderRadius: '50px',
-                px: 5,
-                py: 1.4,
-                fontWeight: 700,
-                fontSize: '0.95rem',
-                '&:hover': {
-                  borderColor: 'rgba(255,255,255,0.5)',
-                  bgcolor: 'rgba(255,255,255,0.05)',
-                },
-              }}
-            >
-              View All Events
-            </Button>
-          </Box>
         )}
       </Container>
     </Box>

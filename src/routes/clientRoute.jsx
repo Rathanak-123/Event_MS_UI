@@ -14,6 +14,7 @@ export default function ClientRouter() {
     <Routes>
       <Route element={<ClientLayout />}>
         <Route path="" element={<HomePage />} />
+
         <Route path="event/:id" element={<EventDetailPage />} />
         <Route path="booking/:eventId" element={<BookingPage />} />
         <Route path="payment/:bookingId" element={<PaymentPage />} />

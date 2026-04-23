@@ -14,6 +14,7 @@ import {
   Search as SearchIcon,
   LocationOn as LocationIcon,
   CalendarToday as CalendarIcon,
+  InfoOutlined as StatusIcon,
 } from '@mui/icons-material';
 
 const selectSx = {
@@ -39,6 +40,8 @@ const SearchFilterBar = ({
   setSelectedVenue,
   selectedDate = 'all',
   setSelectedDate,
+  selectedStatus = 'active',
+  setSelectedStatus,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -128,6 +131,30 @@ const SearchFilterBar = ({
           <MenuItem value="today" sx={menuItemSx}>Today</MenuItem>
           <MenuItem value="tomorrow" sx={menuItemSx}>Tomorrow</MenuItem>
           <MenuItem value="this-weekend" sx={menuItemSx}>This Weekend</MenuItem>
+        </Select>
+      </Box>
+
+      {!isMobile && (
+        <Divider orientation="vertical" flexItem sx={{ borderColor: 'rgba(255,255,255,0.1)', mx: 0.5, my: 1 }} />
+      )}
+
+      {/* Status */}
+      <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, px: 2, width: '100%' }}>
+        <StatusIcon sx={{ color: 'rgba(255,255,255,0.55)', fontSize: 18, mr: 1.2, flexShrink: 0 }} />
+        <Select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          variant="standard"
+          disableUnderline
+          sx={selectSx}
+          MenuProps={{ PaperProps: { sx: { bgcolor: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 2, color: '#fff' } } }}
+        >
+          <MenuItem value="active" sx={menuItemSx}>Active Only</MenuItem>
+          <MenuItem value="all" sx={menuItemSx}>All Statuses</MenuItem>
+          <MenuItem value="upcoming" sx={menuItemSx}>Upcoming</MenuItem>
+          <MenuItem value="ongoing" sx={menuItemSx}>Ongoing</MenuItem>
+          <MenuItem value="completed" sx={menuItemSx}>Completed</MenuItem>
+          <MenuItem value="cancelled" sx={menuItemSx}>Cancelled</MenuItem>
         </Select>
       </Box>
 
