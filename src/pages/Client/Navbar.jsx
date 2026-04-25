@@ -34,6 +34,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import logoWhite from "../../assets/photo/EMS-Use-with-White-Background.png";
+import logoBlack from "../../assets/photo/EMS-Use-with-Black-Background.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -99,32 +101,28 @@ const Navbar = () => {
           >
             <Box
               sx={{
-                width: 34,
-                height: 34,
-                borderRadius: '50%',
-                bgcolor: '#0d9488',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: 900,
-                fontSize: '1rem',
-                color: '#fff',
-                fontFamily: 'Inter, sans-serif',
-                letterSpacing: '-0.5px',
+                transition: 'all 0.3s ease'
               }}
             >
-              V
+              <img 
+                src={theme.palette.mode === 'dark' ? logoBlack : logoWhite} 
+                alt="EMS" 
+                style={{ width: '100px', height: 'auto', objectFit: 'contain' }} 
+              />
             </Box>
             <Typography
               sx={{
                 fontWeight: 800,
-                fontSize: '1.15rem',
+                fontSize: '1.25rem',
                 color: '#fff',
                 letterSpacing: '-0.5px',
                 fontFamily: 'Inter, sans-serif',
               }}
             >
-              VeNTUI
+              Event<span style={{ color: '#0d9488' }}>MS</span>
             </Typography>
           </Box>
 

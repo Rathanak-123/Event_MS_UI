@@ -18,12 +18,15 @@ import {
   CircularProgress,
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import logoImage from "../../../assets/photo/EMS-Use-with-White-Background.png";
+import { useTheme, alpha } from "@mui/material/styles";
 
 export default function Login() {
   const [email, setEmail] = useState("admin123@gmail.com");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
 
   const { signIn, signOut } = useAuth();
   const navigate = useNavigate();
@@ -62,12 +65,39 @@ export default function Login() {
           alignItems: "center",
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-          <LockOutlinedIcon />
-        </Avatar>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 4
+          }}
+        >
+          <img 
+            src={logoImage} 
+            alt="EMS" 
+            style={{ 
+              width: "180px", 
+              height: "auto",
+              objectFit: "contain",
+            }} 
+          />
+        </Box>
 
-        <Typography component="h1" variant="h5">
-          Sign in
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontWeight: 800, 
+            color: theme.palette.text.primary,
+            letterSpacing: "-1px",
+            mb: 1
+          }}
+        >
+          Event<span style={{ color: theme.palette.primary.main }}>MS</span>
+        </Typography>
+
+        <Typography component="h1" variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          Admin Control Center
         </Typography>
 
         {error && (
@@ -159,7 +189,7 @@ export default function Login() {
         align="center"
         sx={{ mt: 8, mb: 4 }}
       >
-        © {new Date().getFullYear()} Your Company — All rights reserved.
+        © {new Date().getFullYear()} Event<span style={{ color: theme.palette.primary.main, fontWeight: 700 }}>MS</span> — All rights reserved.
       </Typography>
     </Container>
   );

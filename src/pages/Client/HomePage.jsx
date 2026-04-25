@@ -322,7 +322,7 @@ const HomePage = () => {
         {/* Event Grid */}
         {renderEventGrid(events, loading)}
 
-        )}
+      
       </Container>
     </Box>
   );

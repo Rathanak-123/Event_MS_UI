@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logoImage from "../../assets/photo/EMS-Use-with-White-Background.png";
 
 const LoginPage = () => {
   const theme = useTheme();
@@ -121,8 +122,36 @@ const LoginPage = () => {
                 boxShadow: '0 40px 100px rgba(0,0,0,0.08)'
             }}
         >
-          <Box sx={{ mb: 4, textAlign: 'center' }}>
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: '-1.5px' }}>Welcome Back</Typography>
+          <Box sx={{ mb: 4, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 4
+              }}
+            >
+              <img 
+                src={logoImage} 
+                alt="EMS" 
+                style={{ 
+                  width: "160px", 
+                  height: "auto",
+                  objectFit: "contain",
+                }} 
+              />
+            </Box>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 900, 
+                mb: 0.5, 
+                letterSpacing: '-1.5px',
+                color: theme.palette.text.primary
+              }}
+            >
+              Event<span style={{ color: theme.palette.primary.main }}>MS</span>
+            </Typography>
             <Typography variant="body2" color="text.secondary">Login to your account to continue</Typography>
           </Box>
 
