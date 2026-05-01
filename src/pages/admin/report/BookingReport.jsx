@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Paper, Typography, Button, Stack, ButtonGroup } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { Box, Paper, Typography, Button, Stack, ButtonGroup, useTheme, alpha } from "@mui/material";
 import { DataGrid, GridToolbarContainer } from "@mui/x-data-grid";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import reportApi from "../../../api/report.api";
 import { exportToExcel, exportToCSV } from "../../../utils/export";
 import dayjs from "dayjs";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const BookingReport = ({ filters }) => {
+  const theme = useTheme();
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -51,6 +55,10 @@ const BookingReport = ({ filters }) => {
   const handleExcelExport = () => exportToExcel(getExportParams());
   const handleCSVExport = () => exportToCSV(getExportParams());
 
+  const handleView = (id) => {
+    navigate(`/admin/reports/booking-detail/${id}`);
+  };
+
   const columns = [
     { 
       field: "booking_date", 
@@ -85,6 +93,28 @@ const BookingReport = ({ filters }) => {
       valueFormatter: (value) => `$${parseFloat(value || 0).toFixed(2)}`,
     },
     { field: "status", headerName: "Status", width: 120 },
+    {
+      field: "actions",
+      headerName: "Action",
+      width: 100,
+      renderCell: (params) => (
+        <Button
+          startIcon={<VisibilityIcon />}
+          size="small"
+          onClick={() => handleView(params.row.booking_id)}
+          sx={{ 
+            textTransform: 'none',
+            fontWeight: 600,
+            color: 'primary.main',
+            '&:hover': {
+              backgroundColor: 'primary.lighter'
+            }
+          }}
+        >
+          View
+        </Button>
+      ),
+    },
   ];
 
   return (

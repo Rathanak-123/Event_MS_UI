@@ -68,37 +68,72 @@ export default function Login() {
         <Box
           sx={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            mb: 4
+            mb: 4,
+            p: 4,
+            bgcolor: "#020617", // Deep dark background matching sidebar
+            borderRadius: 6,
+            width: '100%',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
           }}
         >
-          <img 
-            src={logoImage} 
-            alt="EMS" 
-            style={{ 
-              width: "180px", 
-              height: "auto",
-              objectFit: "contain",
-            }} 
-          />
+          {/* White Square Logo Container */}
+          <Box sx={{ 
+            width: 64, 
+            height: 64, 
+            bgcolor: "white", 
+            borderRadius: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 3,
+            p: 1
+          }}>
+            <img 
+              src={logoImage} 
+              alt="EMS" 
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 900, 
+                color: "#ffffff", 
+                letterSpacing: -2,
+              }}
+            >
+              Event
+            </Typography>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 900, 
+                color: "#00a3a3", 
+                letterSpacing: -2,
+              }}
+            >
+              MS
+            </Typography>
+          </Box>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: alpha("#ffffff", 0.5), 
+              fontSize: "0.75rem", 
+              fontWeight: 600, 
+              mt: 1,
+              letterSpacing: 1,
+              textTransform: 'uppercase'
+            }}
+          >
+            Admin Console
+          </Typography>
         </Box>
-
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 800, 
-            color: theme.palette.text.primary,
-            letterSpacing: "-1px",
-            mb: 1
-          }}
-        >
-          Event<span style={{ color: theme.palette.primary.main }}>MS</span>
-        </Typography>
-
-        <Typography component="h1" variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Admin Control Center
-        </Typography>
 
         {error && (
           <Alert severity="error" sx={{ mt: 2, width: "100%" }}>

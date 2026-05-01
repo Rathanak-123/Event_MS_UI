@@ -6,13 +6,15 @@ import {
   CheckCircleOutline as CompletedIcon, 
   CancelOutlined as CancelledIcon 
 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
 const StatusBadge = ({ status }) => {
+  const { t } = useTranslation();
   const getStatusConfig = (status) => {
     switch (status?.toLowerCase()) {
       case "upcoming":
         return {
-          label: "Upcoming",
+          label: t("event_list.upcoming"),
           color: "info", // Blue
           icon: <UpcomingIcon sx={{ fontSize: "16px !important" }} />,
           sx: {
@@ -23,7 +25,7 @@ const StatusBadge = ({ status }) => {
         };
       case "ongoing":
         return {
-          label: "Ongoing",
+          label: t("event_list.ongoing"),
           color: "success", // Green
           icon: <OngoingIcon sx={{ fontSize: "16px !important" }} />,
           sx: {
@@ -34,7 +36,7 @@ const StatusBadge = ({ status }) => {
         };
       case "completed":
         return {
-          label: "Completed",
+          label: t("event_list.completed"),
           color: "default", // Gray
           icon: <CompletedIcon sx={{ fontSize: "16px !important" }} />,
           sx: {
@@ -45,7 +47,7 @@ const StatusBadge = ({ status }) => {
         };
       case "cancelled":
         return {
-          label: "Cancelled",
+          label: t("event_list.cancelled"),
           color: "error", // Red
           icon: <CancelledIcon sx={{ fontSize: "16px !important" }} />,
           sx: {

@@ -11,6 +11,7 @@ import {
   Collapse,
   useTheme,
   alpha,
+  Stack,
 } from "@mui/material";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -33,14 +34,16 @@ import PersonIcon from "@mui/icons-material/Person";
 import TuneIcon from "@mui/icons-material/Tune";
 import SecurityIcon from "@mui/icons-material/Security";
 
-import { logout } from "../api/authApi";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import logoWhite from "../assets/photo/EMS-Use-with-White-Background.png";
 import logoBlack from "../assets/photo/EMS-Use-with-Black-Background.png";
 import { useTranslation } from "react-i18next";
+
 export default function Sidebar({ open }) {
   const [userOpen, setUserOpen] = useState(true);
   const [settingOpen, setSettingOpen] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
   const { t } = useTranslation();
@@ -49,6 +52,8 @@ export default function Sidebar({ open }) {
     await logout();
     navigate("/login");
   };
+
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Drawer
@@ -63,41 +68,65 @@ export default function Sidebar({ open }) {
             duration: theme.transitions.duration.enteringScreen,
           }),
           overflowX: "hidden",
-          borderRight: `1px solid ${theme.palette.divider}`,
-          backgroundColor: theme.palette.background.paper,
+          borderRight: `1px solid ${isDark ? alpha('#ffffff', 0.05) : '#e2e8f0'}`,
+          backgroundColor: isDark ? "#0f172a" : "#ffffff", // Dynamic background
           backgroundImage: "none",
+          color: isDark ? "#ffffff" : "#1e293b"
         },
       }}>
-      <Box sx={{ 
-        p: 3, 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: open ? "flex-start" : "center", 
-        gap: 2,
-        minHeight: 80
-      }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            mr: open ? 0 : 0
-          }}
-        >
-          <img 
-            src={theme.palette.mode === 'dark' ? logoBlack : logoWhite} 
-            alt="EMS" 
-            style={{ 
-              width: open ? "120px" : "40px", 
-              height: "auto",
-              objectFit: "contain",
-              transition: "width 0.3s ease"
-            }} 
-          />
+      
+      {/* Header Section with Card Style */}
+      <Box sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: open ? "space-between" : "center",
+          p: open ? 1.5 : 1,
+          borderRadius: 3,
+          bgcolor: isDark ? alpha("#ffffff", 0.05) : "#f8fafc", // Card background based on theme
+          border: isDark ? "none" : "1px solid #f1f5f9",
+          cursor: "pointer",
+          "&:hover": { bgcolor: isDark ? alpha("#ffffff", 0.1) : "#f1f5f9" },
+          transition: "all 0.2s ease",
+          minHeight: 64
+        }}>
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            {/* White Square Logo Container */}
+            <Box sx={{ 
+              width: 36, 
+              height: 36, 
+              bgcolor: isDark ? "white" : "#0f172a", // Contrast logo box
+              borderRadius: 1.5,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              overflow: "hidden",
+              p: 0.5
+            }}>
+              <img 
+                src={isDark ? logoBlack : logoWhite} // Toggle logo color
+                alt="EMS" 
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
+            </Box>
+
+            {open && (
+              <Box>
+                <Typography variant="body2" fontWeight={800} color="inherit" sx={{ lineHeight: 1.2 }}>
+                  EventMS
+                </Typography>
+                <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ display: 'block' }}>
+                  Admin Console
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+
+          {open && (
+            <UnfoldMoreIcon sx={{ color: isDark ? alpha("#ffffff", 0.3) : alpha("#000000", 0.3), fontSize: 20 }} />
+          )}
         </Box>
-        {/* Branding text removed as logo might already contain it or user wants full logo focus */}
-        {/* If branding text is still needed, I can keep it, but user said "use full logo" */}
       </Box>
 
       <List sx={{ px: 1.5, py: 1 }}>
@@ -152,8 +181,13 @@ export default function Sidebar({ open }) {
             py: 1.25,
             px: 2,
             justifyContent: open ? "initial" : "center",
+            color: isDark ? (checkinOpen ? "#ffffff" : alpha("#ffffff", 0.7)) : (checkinOpen ? theme.palette.primary.main : "#64748b"),
             "&:hover": {
-              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+              backgroundColor: isDark ? alpha("#ffffff", 0.05) : alpha(theme.palette.primary.main, 0.04),
+              color: isDark ? "#ffffff" : theme.palette.primary.main,
+              "& .MuiListItemIcon-root": {
+                color: isDark ? "#ffffff" : theme.palette.primary.main,
+              },
             },
           }}
         >
@@ -161,7 +195,7 @@ export default function Sidebar({ open }) {
             minWidth: 0, 
             mr: open ? 2 : "auto", 
             justifyContent: "center",
-            color: checkinOpen ? theme.palette.primary.main : theme.palette.text.secondary
+            color: "inherit"
           }}>
             <QrCodeScannerIcon />
           </ListItemIcon>
@@ -171,28 +205,65 @@ export default function Sidebar({ open }) {
               primaryTypographyProps={{ 
                 fontSize: "0.9rem", 
                 fontWeight: checkinOpen ? 700 : 500,
-                color: checkinOpen ? theme.palette.primary.main : theme.palette.text.primary
+                color: "inherit"
               }} 
             />
           )}
-          {open && (checkinOpen ? <ExpandLessIcon sx={{ color: theme.palette.primary.main }} /> : <ExpandMoreIcon />)}
+          {open && (checkinOpen ? <ExpandLessIcon sx={{ color: "inherit" }} /> : <ExpandMoreIcon sx={{ color: "inherit" }} />)}
         </ListItemButton>
  
         <Collapse in={checkinOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding sx={{ mb: 1 }}>
             <SubNavItem to="/admin/checkin/scanner" icon={<QrCodeScannerIcon />} label={t("sidebar.scanner")} theme={theme} />
             <SubNavItem to="/admin/checkin/list" icon={<FormatListBulletedIcon />} label={t("sidebar.checkin_list")} theme={theme} />
-            <SubNavItem to="/admin/checkin/stats" icon={<AssessmentIcon />} label={t("sidebar.statistics")} theme={theme} />
           </List>
         </Collapse>
 
-        <NavItem 
-          to="/admin/reports" 
-          icon={<SummarizeIcon />} 
-          label={t("sidebar.report")} 
-          open={open} 
-          theme={theme} 
-        />
+        <ListItemButton 
+          onClick={() => setReportOpen(!reportOpen)}
+          sx={{
+            borderRadius: "12px",
+            mb: 0.5,
+            py: 1.25,
+            px: 2,
+            justifyContent: open ? "initial" : "center",
+            color: isDark ? (reportOpen ? "#ffffff" : alpha("#ffffff", 0.7)) : (reportOpen ? theme.palette.primary.main : "#64748b"),
+            "&:hover": {
+              backgroundColor: isDark ? alpha("#ffffff", 0.05) : alpha(theme.palette.primary.main, 0.04),
+              color: isDark ? "#ffffff" : theme.palette.primary.main,
+              "& .MuiListItemIcon-root": {
+                color: isDark ? "#ffffff" : theme.palette.primary.main,
+              },
+            },
+          }}
+        >
+          <ListItemIcon sx={{ 
+            minWidth: 0, 
+            mr: open ? 2 : "auto", 
+            justifyContent: "center",
+            color: "inherit"
+          }}>
+            <SummarizeIcon />
+          </ListItemIcon>
+          {open && (
+            <ListItemText 
+              primary={t("sidebar.report")} 
+              primaryTypographyProps={{ 
+                fontSize: "0.9rem", 
+                fontWeight: reportOpen ? 700 : 500,
+                color: "inherit"
+              }} 
+            />
+          )}
+          {open && (reportOpen ? <ExpandLessIcon sx={{ color: "inherit" }} /> : <ExpandMoreIcon sx={{ color: "inherit" }} />)}
+        </ListItemButton>
+ 
+        <Collapse in={reportOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding sx={{ mb: 1 }}>
+            <SubNavItem to="/admin/reports/event-booking" icon={<AssessmentIcon />} label={t("sidebar.event_booking_report", "Event Report")} theme={theme} />
+            <SubNavItem to="/admin/reports/check-in" icon={<AssessmentIcon />} label={t("sidebar.check_in_report", "Check-in Report")} theme={theme} />
+          </List>
+        </Collapse>
  
         {/* Users Section */}
         <ListItemButton 
@@ -203,8 +274,13 @@ export default function Sidebar({ open }) {
             py: 1.25,
             px: 2,
             justifyContent: open ? "initial" : "center",
+            color: isDark ? (userOpen ? "#ffffff" : alpha("#ffffff", 0.7)) : (userOpen ? theme.palette.primary.main : "#64748b"),
             "&:hover": {
-              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+              backgroundColor: isDark ? alpha("#ffffff", 0.05) : alpha(theme.palette.primary.main, 0.04),
+              color: isDark ? "#ffffff" : theme.palette.primary.main,
+              "& .MuiListItemIcon-root": {
+                color: isDark ? "#ffffff" : theme.palette.primary.main,
+              },
             },
           }}
         >
@@ -212,7 +288,7 @@ export default function Sidebar({ open }) {
             minWidth: 0, 
             mr: open ? 2 : "auto", 
             justifyContent: "center",
-            color: userOpen ? theme.palette.primary.main : theme.palette.text.secondary
+            color: "inherit"
           }}>
             <PeopleIcon />
           </ListItemIcon>
@@ -222,11 +298,11 @@ export default function Sidebar({ open }) {
               primaryTypographyProps={{ 
                 fontSize: "0.9rem", 
                 fontWeight: userOpen ? 700 : 500,
-                color: userOpen ? theme.palette.primary.main : theme.palette.text.primary
+                color: "inherit"
               }} 
             />
           )}
-          {open && (userOpen ? <ExpandLessIcon sx={{ color: theme.palette.primary.main }} /> : <ExpandMoreIcon />)}
+          {open && (userOpen ? <ExpandLessIcon sx={{ color: "inherit" }} /> : <ExpandMoreIcon sx={{ color: "inherit" }} />)}
         </ListItemButton>
  
         <Collapse in={userOpen} timeout="auto" unmountOnExit>
@@ -245,8 +321,13 @@ export default function Sidebar({ open }) {
             py: 1.25,
             px: 2,
             justifyContent: open ? "initial" : "center",
+            color: isDark ? (settingOpen ? "#ffffff" : alpha("#ffffff", 0.7)) : (settingOpen ? theme.palette.primary.main : "#64748b"),
             "&:hover": {
-              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+              backgroundColor: isDark ? alpha("#ffffff", 0.05) : alpha(theme.palette.primary.main, 0.04),
+              color: isDark ? "#ffffff" : theme.palette.primary.main,
+              "& .MuiListItemIcon-root": {
+                color: isDark ? "#ffffff" : theme.palette.primary.main,
+              },
             },
           }}
         >
@@ -254,7 +335,7 @@ export default function Sidebar({ open }) {
             minWidth: 0, 
             mr: open ? 2 : "auto", 
             justifyContent: "center",
-            color: settingOpen ? theme.palette.primary.main : theme.palette.text.secondary
+            color: "inherit"
           }}>
             <SettingsIcon />
           </ListItemIcon>
@@ -264,11 +345,11 @@ export default function Sidebar({ open }) {
               primaryTypographyProps={{ 
                 fontSize: "0.9rem", 
                 fontWeight: settingOpen ? 700 : 500,
-                color: settingOpen ? theme.palette.primary.main : theme.palette.text.primary
+                color: "inherit"
               }} 
             />
           )}
-          {open && (settingOpen ? <ExpandLessIcon sx={{ color: theme.palette.primary.main }} /> : <ExpandMoreIcon />)}
+          {open && (settingOpen ? <ExpandLessIcon sx={{ color: "inherit" }} /> : <ExpandMoreIcon sx={{ color: "inherit" }} />)}
         </ListItemButton>
  
         <Collapse in={settingOpen} timeout="auto" unmountOnExit>
@@ -283,16 +364,17 @@ export default function Sidebar({ open }) {
                 borderRadius: "10px",
                 mb: 0.5,
                 mx: 1,
+                color: alpha("#ffffff", 0.5),
                 "&:hover": {
-                  backgroundColor: alpha(theme.palette.error.main, 0.08),
-                  color: theme.palette.error.main,
+                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                  color: theme.palette.error.light,
                   "& .MuiListItemIcon-root": {
-                    color: theme.palette.error.main,
+                    color: theme.palette.error.light,
                   }
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 32, color: theme.palette.text.secondary }}>
+              <ListItemIcon sx={{ minWidth: 32, color: "inherit" }}>
                 <LogoutOutlinedIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText 
@@ -308,40 +390,31 @@ export default function Sidebar({ open }) {
 }
 
 function NavItem({ to, icon, label, open, theme }) {
+  const isDark = theme.palette.mode === 'dark';
+  
   return (
     <ListItemButton
       component={NavLink}
       to={to}
-      end={to === "/admin"}
       sx={{
         borderRadius: "12px",
         mb: 0.5,
         py: 1.25,
         px: 2,
         justifyContent: open ? "initial" : "center",
-        color: theme.palette.text.secondary,
+        color: isDark ? alpha("#ffffff", 0.7) : "#64748b",
         "&.active": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.08),
-          color: theme.palette.primary.main,
+          backgroundColor: isDark ? alpha("#ffffff", 0.1) : alpha(theme.palette.primary.main, 0.08),
+          color: isDark ? "#ffffff" : theme.palette.primary.main,
           "& .MuiListItemIcon-root": {
-            color: theme.palette.primary.main,
+            color: isDark ? "#ffffff" : theme.palette.primary.main,
           },
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            left: 0,
-            top: "20%",
-            height: "60%",
-            width: "4px",
-            backgroundColor: theme.palette.primary.main,
-            borderRadius: "0 4px 4px 0",
-          }
         },
         "&:hover": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04),
-          color: theme.palette.primary.main,
+          backgroundColor: isDark ? alpha("#ffffff", 0.05) : alpha(theme.palette.primary.main, 0.04),
+          color: isDark ? "#ffffff" : theme.palette.primary.main,
           "& .MuiListItemIcon-root": {
-            color: theme.palette.primary.main,
+            color: isDark ? "#ffffff" : theme.palette.primary.main,
           },
         },
       }}
@@ -371,6 +444,7 @@ function NavItem({ to, icon, label, open, theme }) {
 }
 
 function SubNavItem({ to, icon, label, theme }) {
+  const isDark = theme.palette.mode === 'dark';
   return (
     <ListItemButton
       component={NavLink}
@@ -381,19 +455,19 @@ function SubNavItem({ to, icon, label, theme }) {
         mx: 1,
         pl: 4,
         py: 1,
-        color: theme.palette.text.secondary,
+        color: isDark ? alpha("#ffffff", 0.5) : "#94a3b8",
         "&.active": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04),
-          color: theme.palette.primary.main,
+          backgroundColor: isDark ? alpha("#ffffff", 0.05) : alpha(theme.palette.primary.main, 0.04),
+          color: isDark ? "#ffffff" : theme.palette.primary.main,
           "& .MuiListItemIcon-root": {
-            color: theme.palette.primary.main,
+            color: isDark ? "#ffffff" : theme.palette.primary.main,
           },
         },
         "&:hover": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.02),
-          color: theme.palette.primary.main,
+          backgroundColor: isDark ? alpha("#ffffff", 0.03) : alpha(theme.palette.primary.main, 0.02),
+          color: isDark ? "#ffffff" : theme.palette.primary.main,
           "& .MuiListItemIcon-root": {
-            color: theme.palette.primary.main,
+            color: isDark ? "#ffffff" : theme.palette.primary.main,
           },
         },
       }}

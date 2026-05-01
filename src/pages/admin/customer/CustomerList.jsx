@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Paper,
@@ -32,6 +33,7 @@ import { getImageUrl } from "../../../utils/imageUtils";
 export default function CustomerList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -94,7 +96,9 @@ export default function CustomerList() {
       console.error(error);
       setCustomers([]);
       setTotalRows(0);
-      showSnackbar("Failed to load customers", "error");
+      setCustomers([]);
+      setTotalRows(0);
+      showSnackbar(t("admin_common.load_failed"), "error");
     } finally {
       setLoading(false);
     }
@@ -120,15 +124,15 @@ export default function CustomerList() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this customer?")) return;
+    if (!window.confirm(t("admin_common.delete_confirm"))) return;
 
     try {
       await deleteCustomer(id);
       setCustomers((prev) => prev.filter((cust) => cust.id !== id));
-      showSnackbar("Customer deleted successfully");
+      showSnackbar(t("admin_common.delete_success"));
     } catch (error) {
       console.error("Delete failed:", error?.response?.data || error);
-      showSnackbar("Delete failed", "error");
+      showSnackbar(t("admin_common.load_failed"), "error");
     }
   };
 
@@ -159,7 +163,7 @@ export default function CustomerList() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Customer Management
+        {t("customer_list.title")}
       </Typography>
 
       <Paper
@@ -178,11 +182,12 @@ export default function CustomerList() {
           <Stack
             direction={{ xs: "column", md: "row" }}
             spacing={2}
+            alignItems="center"
             sx={{ flex: 1 }}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search customer..."
+              placeholder={t("customer_list.search_placeholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -200,46 +205,46 @@ export default function CustomerList() {
             <TextField
               select
               size="small"
-              label="Sort By"
+              label={t("admin_common.sort_by")}
               value={sortBy}
               onChange={handleSortByChange}
               sx={{ minWidth: 170 }}>
-              <MenuItem value="first_name">First Name</MenuItem>
-              <MenuItem value="last_name">Last Name</MenuItem>
-              <MenuItem value="id">ID</MenuItem>
-              <MenuItem value="email">Email</MenuItem>
-              <MenuItem value="status">Status</MenuItem>
+              <MenuItem value="first_name">{t("customer_list.table.first_name")}</MenuItem>
+              <MenuItem value="last_name">{t("customer_list.table.last_name")}</MenuItem>
+              <MenuItem value="id">{t("admin_common.id")}</MenuItem>
+              <MenuItem value="email">{t("customer_list.table.email")}</MenuItem>
+              <MenuItem value="status">{t("admin_common.status")}</MenuItem>
             </TextField>
 
             <TextField
               select
               size="small"
-              label="Sort Order"
+              label={t("admin_common.sort_order")}
               value={sortOrder}
               onChange={handleSortOrderChange}
               sx={{ minWidth: 160 }}>
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
+              <MenuItem value="asc">{t("admin_common.ascending")}</MenuItem>
+              <MenuItem value="desc">{t("admin_common.descending")}</MenuItem>
             </TextField>
 
             <Button
               variant="contained"
               onClick={handleSearch}
-              sx={{ minWidth: 120 }}>
-              Search
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}>
+              {t("admin_common.search")}
             </Button>
 
             <Button
               variant="outlined"
               startIcon={<Refresh />}
               onClick={handleReset}
-              sx={{ minWidth: 120 }}>
-              Reset
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}>
+              {t("admin_common.reset")}
             </Button>
           </Stack>
 
-          <Button variant="contained" onClick={() => navigate("add")}>
-            Add Customer
+          <Button variant="contained" onClick={() => navigate("add")} sx={{ whiteSpace: 'nowrap' }}>
+            {t("customer_list.add_new")}
           </Button>
         </Stack>
       </Paper>
@@ -262,28 +267,28 @@ export default function CustomerList() {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <strong>ID</strong>
+                      <strong>{t("admin_common.id")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Picture</strong>
+                      <strong>{t("customer_list.table.picture")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>First Name</strong>
+                      <strong>{t("customer_list.table.first_name")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Last Name</strong>
+                      <strong>{t("customer_list.table.last_name")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Email</strong>
+                      <strong>{t("customer_list.table.email")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Role</strong>
+                      <strong>{t("customer_list.table.role")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Status</strong>
+                      <strong>{t("admin_common.status")}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>Actions</strong>
+                      <strong>{t("admin_common.actions")}</strong>
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -340,7 +345,7 @@ export default function CustomerList() {
                   {!loading && customers.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={8} align="center">
-                        No customers found
+                        {t("customer_list.no_found")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -356,6 +361,7 @@ export default function CustomerList() {
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              labelRowsPerPage={t("admin_common.rows_per_page")}
             />
           </>
         )}

@@ -12,6 +12,16 @@ export const getAllBookings = async () => {
   }
 };
 
+export const getBookingById = async (id) => {
+  try {
+    const response = await axiosInstance.get(`${BASE}${id}/`);
+    return response.data.data || response.data;
+  } catch (error) {
+    console.error("Get booking by id failed:", error);
+    throw error;
+  }
+};
+
 export const getPaginatedBookings = async ({
   page = 1,
   limit = 10,

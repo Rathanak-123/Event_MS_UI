@@ -20,11 +20,13 @@ import {
   LocationOn as LocationIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 import { getAllCategories } from "../api/category.api";
 import { getAllVenues } from "../api/venue.api";
 import { getImageUrl } from "../utils/imageUtils";
 
 const EventModal = ({ open, onClose, onSave, event = null }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     event_name: "",
     location: "",
@@ -125,7 +127,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
       <DialogTitle sx={{ m: 0, p: 3, fontWeight: 700, fontSize: "1.5rem", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        {event ? "Edit Event" : "Create New Event"}
+        {event ? t("event_list.modal.edit_title") : t("event_list.modal.create_title")}
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
@@ -137,7 +139,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Event Name"
+                  label={t("event_list.modal.name")}
                   name="event_name"
                   value={formData.event_name}
                   onChange={handleChange}
@@ -147,7 +149,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Organizer"
+                  label={t("event_list.modal.organizer")}
                   name="organizer"
                   value={formData.organizer}
                   onChange={handleChange}
@@ -159,7 +161,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Event Date"
+                  label={t("event_list.modal.date")}
                   name="event_date"
                   type="date"
                   value={formData.event_date}
@@ -174,7 +176,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
               <Grid item xs={12} sm={3}>
                 <TextField
                   fullWidth
-                  label="Start Time"
+                  label={t("event_list.modal.start_time")}
                   name="start_time"
                   type="time"
                   value={formData.start_time}
@@ -185,7 +187,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
               <Grid item xs={12} sm={3}>
                 <TextField
                   fullWidth
-                  label="End Time"
+                  label={t("event_list.modal.end_time")}
                   name="end_time"
                   type="time"
                   value={formData.end_time}
@@ -197,7 +199,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
                 <TextField
                   fullWidth
                   select
-                  label="Category"
+                  label={t("event_list.modal.category")}
                   name="category_id"
                   value={formData.category_id}
                   onChange={handleChange}
@@ -213,7 +215,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
                 <TextField
                   fullWidth
                   select
-                  label="Venue"
+                  label={t("event_list.modal.venue")}
                   name="venue_id"
                   value={formData.venue_id}
                   onChange={handleChange}
@@ -228,7 +230,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Location (Display Only)"
+                  label={t("event_list.modal.location")}
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
@@ -241,21 +243,21 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
                 <TextField
                   fullWidth
                   select
-                  label="Status"
+                  label={t("event_list.status")}
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
                 >
-                  <MenuItem value="upcoming">Upcoming</MenuItem>
-                  <MenuItem value="ongoing">Ongoing</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                  <MenuItem value="cancelled">Cancelled</MenuItem>
+                  <MenuItem value="upcoming">{t("event_list.upcoming")}</MenuItem>
+                  <MenuItem value="ongoing">{t("event_list.ongoing")}</MenuItem>
+                  <MenuItem value="completed">{t("event_list.completed")}</MenuItem>
+                  <MenuItem value="cancelled">{t("event_list.cancelled")}</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Description"
+                  label={t("event_list.modal.description")}
                   name="description"
                   multiline
                   rows={4}
@@ -298,7 +300,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
                     startIcon={<UploadIcon />}
                     sx={{ mt: 2, borderRadius: 2 }}
                   >
-                    Change Image
+                    {t("event_list.modal.change_image")}
                     <input type="file" hidden accept="image/*" onChange={handleImageChange} />
                   </Button>
                 </Box>
@@ -306,10 +308,10 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
                 <>
                   <UploadIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Upload event cover image
+                    {t("event_list.modal.upload_title")}
                   </Typography>
                   <Button variant="outlined" component="label" sx={{ borderRadius: 2 }}>
-                    Select Image
+                    {t("event_list.modal.select_image")}
                     <input type="file" hidden accept="image/*" onChange={handleImageChange} />
                   </Button>
                 </>
@@ -320,7 +322,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
       </DialogContent>
       <DialogActions sx={{ p: 3, gap: 2 }}>
         <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
-          Cancel
+          {t("event_list.modal.cancel")}
         </Button>
         <Button
           onClick={handleSubmit}
@@ -328,7 +330,7 @@ const EventModal = ({ open, onClose, onSave, event = null }) => {
           disabled={loading || !formData.event_name}
           sx={{ borderRadius: 2, minWidth: 120 }}
         >
-          {loading ? <CircularProgress size={24} /> : event ? "Update Event" : "Create Event"}
+          {loading ? <CircularProgress size={24} /> : event ? t("event_list.modal.update_button") : t("event_list.modal.create_button")}
         </Button>
       </DialogActions>
     </Dialog>

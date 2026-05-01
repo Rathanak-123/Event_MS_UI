@@ -10,13 +10,17 @@ export default function AdminLayout({ dark, setDark }) {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar open={open} />
+      <Box className="no-print">
+        <Sidebar open={open} />
+      </Box>
       <Box sx={{ flexGrow: 1 }}>
-        <Header
-          dark={dark}
-          setDark={setDark}
-          toggleSidebar={() => setOpen(!open)}
-        />
+        <Box className="no-print">
+          <Header
+            dark={dark}
+            setDark={setDark}
+            toggleSidebar={() => setOpen(!open)}
+          />
+        </Box>
         <Box sx={{ p: 3 }}>
           <Outlet />
         </Box>

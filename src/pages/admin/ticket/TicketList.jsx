@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Paper,
@@ -28,6 +29,7 @@ import { getAllEvents } from "../../../api/events.api";
 export default function TicketList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [tickets, setTickets] = useState([]);
   const [events, setEvents] = useState([]);
@@ -103,7 +105,9 @@ export default function TicketList() {
       console.error(error);
       setTickets([]);
       setTotalRows(0);
-      showSnackbar("Failed to load tickets", "error");
+      setTickets([]);
+      setTotalRows(0);
+      showSnackbar(t("admin_common.load_failed"), "error");
     } finally {
       setLoading(false);
     }
@@ -133,15 +137,15 @@ export default function TicketList() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this ticket?")) return;
+    if (!window.confirm(t("admin_common.delete_confirm"))) return;
 
     try {
       await deleteTicket(id);
       setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
-      showSnackbar("Ticket deleted successfully");
+      showSnackbar(t("admin_common.delete_success"));
     } catch (error) {
       console.error("Delete failed:", error?.response?.data || error);
-      showSnackbar("Delete failed", "error");
+      showSnackbar(t("admin_common.load_failed"), "error");
     }
   };
 
@@ -172,7 +176,7 @@ export default function TicketList() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Ticket Management
+        {t("ticket_list.title")}
       </Typography>
 
       <Paper
@@ -191,11 +195,12 @@ export default function TicketList() {
           <Stack
             direction={{ xs: "column", md: "row" }}
             spacing={2}
+            alignItems="center"
             sx={{ flex: 1 }}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search ticket..."
+              placeholder={t("ticket_list.search_placeholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -213,46 +218,46 @@ export default function TicketList() {
             <TextField
               select
               size="small"
-              label="Sort By"
+              label={t("admin_common.sort_by")}
               value={sortBy}
               onChange={handleSortByChange}
               sx={{ minWidth: 170 }}>
-              <MenuItem value="id">ID</MenuItem>
-              <MenuItem value="ticket_type">Ticket Type</MenuItem>
-              <MenuItem value="price">Price</MenuItem>
-              <MenuItem value="quantity">Quantity</MenuItem>
-              <MenuItem value="sold">Sold</MenuItem>
+              <MenuItem value="id">{t("admin_common.id")}</MenuItem>
+              <MenuItem value="ticket_type">{t("ticket_list.table.type")}</MenuItem>
+              <MenuItem value="price">{t("ticket_list.table.price")}</MenuItem>
+              <MenuItem value="quantity">{t("ticket_list.table.quantity")}</MenuItem>
+              <MenuItem value="sold">{t("ticket_list.table.sold")}</MenuItem>
             </TextField>
 
             <TextField
               select
               size="small"
-              label="Sort Order"
+              label={t("admin_common.sort_order")}
               value={sortOrder}
               onChange={handleSortOrderChange}
               sx={{ minWidth: 160 }}>
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
+              <MenuItem value="asc">{t("admin_common.ascending")}</MenuItem>
+              <MenuItem value="desc">{t("admin_common.descending")}</MenuItem>
             </TextField>
 
             <Button
               variant="contained"
               onClick={handleSearch}
-              sx={{ minWidth: 120 }}>
-              Search
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}>
+              {t("admin_common.search")}
             </Button>
 
             <Button
               variant="outlined"
               startIcon={<Refresh />}
               onClick={handleReset}
-              sx={{ minWidth: 120 }}>
-              Reset
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}>
+              {t("admin_common.reset")}
             </Button>
           </Stack>
 
-          <Button variant="contained" onClick={() => navigate("add")}>
-            Add Ticket
+          <Button variant="contained" onClick={() => navigate("add")} sx={{ whiteSpace: 'nowrap' }}>
+            {t("ticket_list.add_new")}
           </Button>
         </Stack>
       </Paper>
@@ -275,22 +280,22 @@ export default function TicketList() {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <strong>Event</strong>
+                      <strong>{t("ticket_list.table.event")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Ticket Type</strong>
+                      <strong>{t("ticket_list.table.type")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Price</strong>
+                      <strong>{t("ticket_list.table.price")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Quantity</strong>
+                      <strong>{t("ticket_list.table.quantity")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Sold</strong>
+                      <strong>{t("ticket_list.table.sold")}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>Actions</strong>
+                      <strong>{t("admin_common.actions")}</strong>
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -323,7 +328,7 @@ export default function TicketList() {
                   {!loading && tickets.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} align="center">
-                        No tickets found
+                        {t("ticket_list.no_found")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -339,6 +344,7 @@ export default function TicketList() {
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              labelRowsPerPage={t("admin_common.rows_per_page")}
             />
           </>
         )}

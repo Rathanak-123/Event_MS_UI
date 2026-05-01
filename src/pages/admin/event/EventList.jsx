@@ -32,6 +32,7 @@ import {
   FilterList as FilterIcon,
   Visibility as ViewIcon,
 } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 import { useNavigate, Outlet } from "react-router-dom";
 import { getPaginatedEvents, createEvent, updateEvent, deleteEvent } from "../../../api/events.api";
 import StatusBadge from "../../../components/StatusBadge";
@@ -41,6 +42,7 @@ import { getImageUrl } from "../../../utils/imageUtils";
 const EventList = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [events, setEvents] = useState([]);
@@ -71,7 +73,7 @@ const EventList = () => {
       setError(null);
     } catch (err) {
       console.error("Failed to fetch events:", err);
-      setError("Failed to load events. Please try again.");
+      setError(t("event_list.load_error"));
     } finally {
       setLoading(false);
     }
@@ -119,7 +121,7 @@ const EventList = () => {
   };
 
   const handleDeleteEvent = async (id) => {
-    if (window.confirm("Are you sure you want to delete this event?")) {
+    if (window.confirm(t("event_list.actions.delete_confirm"))) {
       try {
         await deleteEvent(id);
         fetchEvents();
@@ -135,10 +137,10 @@ const EventList = () => {
       <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, color: "text.primary" }}>
-            Event Management
+            {t("event_list.title")}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Manage all system events, schedules, and statuses
+            {t("event_list.subtitle")}
           </Typography>
         </Box>
         <Button
@@ -147,7 +149,7 @@ const EventList = () => {
           onClick={handleOpenCreateModal}
           sx={{ borderRadius: 2, px: 3, fontWeight: 700 }}
         >
-          Add New Event
+          {t("event_list.add_new")}
         </Button>
       </Stack>
 
@@ -158,7 +160,7 @@ const EventList = () => {
             <TextField
               fullWidth
               size="small"
-              placeholder="Search events..."
+              placeholder={t("event_list.search")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -179,7 +181,7 @@ const EventList = () => {
               fullWidth
               select
               size="small"
-              label="Status"
+              label={t("event_list.status")}
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -189,11 +191,11 @@ const EventList = () => {
                 sx: { borderRadius: 2 }
               }}
             >
-              <MenuItem value="all">All Statuses</MenuItem>
-              <MenuItem value="upcoming">Upcoming</MenuItem>
-              <MenuItem value="ongoing">Ongoing</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
+              <MenuItem value="all">{t("event_list.all_statuses")}</MenuItem>
+              <MenuItem value="upcoming">{t("event_list.upcoming")}</MenuItem>
+              <MenuItem value="ongoing">{t("event_list.ongoing")}</MenuItem>
+              <MenuItem value="completed">{t("event_list.completed")}</MenuItem>
+              <MenuItem value="cancelled">{t("event_list.cancelled")}</MenuItem>
             </TextField>
           </Grid>
         </Grid>
@@ -213,12 +215,12 @@ const EventList = () => {
             <Table>
               <TableHead sx={{ bgcolor: "rgba(0,0,0,0.02)" }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Event</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Category & Venue</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("event_list.table.id")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("event_list.table.event")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("event_list.table.category_venue")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("event_list.table.date")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("event_list.table.status")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="right">{t("event_list.table.actions")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -249,17 +251,17 @@ const EventList = () => {
                       <StatusBadge status={event.status} />
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="View Details">
+                      <Tooltip title={t("event_list.actions.view")}>
                         <IconButton onClick={() => navigate(`${event.id}`)} size="small" color="info">
                           <ViewIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Edit">
+                      <Tooltip title={t("event_list.actions.edit")}>
                         <IconButton onClick={() => handleOpenEditModal(event)} size="small" color="primary">
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete">
+                      <Tooltip title={t("event_list.actions.delete")}>
                         <IconButton onClick={() => handleDeleteEvent(event.id)} size="small" color="error">
                           <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -270,7 +272,7 @@ const EventList = () => {
                 {events.length === 0 && !loading && (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">No events found.</Typography>
+                      <Typography color="text.secondary">{t("event_list.table.no_found")}</Typography>
                     </TableCell>
                   </TableRow>
                 )}
@@ -287,6 +289,7 @@ const EventList = () => {
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
+              labelRowsPerPage={t("admin_common.rows_per_page")}
               sx={{
                 borderTop: '1px solid',
                 borderColor: 'divider',

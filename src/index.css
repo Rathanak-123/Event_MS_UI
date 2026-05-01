@@ -66,3 +66,59 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+@media print {
+  /* Aggressively hide navigation */
+  .no-print, 
+  .no-print *,
+  header, 
+  aside, 
+  nav, 
+  footer,
+  .MuiDrawer-root, 
+  .MuiAppBar-root,
+  .MuiButton-root:not(.keep-print) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    top: -9999px !important;
+  }
+
+  body, html, #root, main {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+
+  /* Reset layout constraints */
+  .MuiBox-root {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+  }
+  
+  .MuiPaper-root {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure colors are printed */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

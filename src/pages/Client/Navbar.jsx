@@ -223,30 +223,26 @@ const Navbar = () => {
             ) : (
               <>
                 {!isMobile ? (
-                  <>
-                    <Button
-                      component={Link}
-                      to="/login"
-                      sx={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600, px: 2 }}
-                    >
-                      {t('common.login')}
-                    </Button>
-                    <Button
-                      component={Link}
-                      to="/signup"
-                      variant="contained"
-                      sx={{
-                        bgcolor: '#0d9488',
-                        color: '#fff',
-                        borderRadius: '50px',
-                        px: 3,
-                        fontWeight: 700,
-                        '&:hover': { bgcolor: '#0f766e' },
-                      }}
-                    >
-                      {t('common.signup')}
-                    </Button>
-                  </>
+                  <Button
+                    component={Link}
+                    to="/signup"
+                    variant="contained"
+                    sx={{
+                      bgcolor: '#0d9488',
+                      color: '#fff',
+                      borderRadius: '50px',
+                      px: 4,
+                      py: 1,
+                      fontWeight: 800,
+                      textTransform: 'none',
+                      fontSize: '0.95rem',
+                      boxShadow: '0 8px 20px rgba(13, 148, 136, 0.3)',
+                      '&:hover': { bgcolor: '#0f766e', transform: 'translateY(-1px)' },
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    Join Now
+                  </Button>
                 ) : (
                   <IconButton sx={{ color: '#fff' }} onClick={() => setMobileMenuOpen(true)}>
                     <MenuIcon />
@@ -281,12 +277,8 @@ const Navbar = () => {
                 <Box sx={{ px: 2, pt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                   <Button fullWidth variant="contained" component={Link} to="/signup"
                     onClick={() => setMobileMenuOpen(false)}
-                    sx={{ bgcolor: '#0d9488', borderRadius: '50px', fontWeight: 700 }}
-                  >Sign Up</Button>
-                  <Button fullWidth variant="outlined" component={Link} to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    sx={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '50px' }}
-                  >Login</Button>
+                    sx={{ bgcolor: '#0d9488', borderRadius: '50px', fontWeight: 800, py: 1.2 }}
+                  >Join Now</Button>
                 </Box>
               </>
             )}

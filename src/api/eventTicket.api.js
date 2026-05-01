@@ -91,6 +91,24 @@ export const getEventTicketById = async (id) => {
  * @returns {Promise<Object>} Created ticket.
  */
 export const generateEventTicket = async (bookingId) => {
+  // First, check if a ticket already exists for this booking
+  try {
+    const existing = await getPaginatedEventTickets({ 
+        filters: { "booking.id": bookingId },
+        limit: 1 
+    });
+    
+    // Check both standard paginated response and potential direct array response
+    const tickets = existing?.data || (Array.isArray(existing) ? existing : []);
+    
+    if (tickets.length > 0) {
+        console.log("Ticket already exists for booking:", bookingId);
+        return tickets[0];
+    }
+  } catch (e) {
+    console.warn("Check for existing ticket failed, proceeding with generation:", e);
+  }
+
   const code = `TIX-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${code}`;
   

@@ -25,6 +25,10 @@ import CheckinPage from "../pages/admin/checkin/CheckinPage";
 import CheckinListPage from "../pages/admin/checkin/CheckinListPage";
 import CheckinStats from "../pages/admin/checkin/CheckinStats";
 import ReportPage from "../pages/admin/report/ReportPage";
+import EventReportPage from "../pages/admin/report/EventReportPage";
+import CheckInReportPage from "../pages/admin/report/CheckInReportPage";
+import BookingDetailReport from "../pages/admin/report/BookingDetailReport";
+import CheckInDetailReport from "../pages/admin/report/CheckInDetailReport";
 
 export default function AdminRouter({ dark, setDark }) {
   return (
@@ -86,7 +90,13 @@ export default function AdminRouter({ dark, setDark }) {
             <Route path=":id" element={<CustomerDetail />} />
           </Route>
 
-          <Route path="reports" element={<ReportPage />} />
+          <Route path="reports">
+            <Route index element={<ReportPage />} />
+            <Route path="event-booking" element={<EventReportPage />} />
+            <Route path="check-in" element={<CheckInReportPage />} />
+            <Route path="booking-detail/:id" element={<BookingDetailReport />} />
+            <Route path="check-in-detail/:id" element={<CheckInDetailReport />} />
+          </Route>
         </Route>
       </Route>
 

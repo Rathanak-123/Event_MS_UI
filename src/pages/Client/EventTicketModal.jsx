@@ -46,19 +46,20 @@ const Barcode = () => (
   </Box>
 );
 
-const TicketNotch = ({ top }) => (
+const TicketNotch = () => (
     <Box sx={{ 
         position: 'absolute', 
-        top: top || '50%', 
-        left: -12, 
-        right: -12, 
+        top: '50%', 
+        left: -16, 
+        right: -16, 
         display: 'flex', 
         justifyContent: 'space-between',
         zIndex: 10,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        transform: 'translateY(-50%)'
     }}>
-        <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: 'background.paper', ml: 0 }} />
-        <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: 'background.paper', mr: 0 }} />
+        <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: '#f8fafc' }} />
+        <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: '#f8fafc' }} />
     </Box>
 );
 
@@ -114,7 +115,10 @@ const EventTicketModal = ({ open, onClose, booking }) => {
         link.parentNode.removeChild(link);
     } catch (error) {
         console.error("Failed to download ticket:", error);
-        alert("Download failed. Please try again later.");
+        const errorMsg = error.response?.status 
+            ? `Server returned ${error.response.status}`
+            : error.message;
+        alert(`Download failed: ${errorMsg}\n\nPlease check if the backend API (/bookings/${booking.id}/ticket/) is running and supports ticket downloads.`);
     }
   };
 
@@ -122,34 +126,33 @@ const EventTicketModal = ({ open, onClose, booking }) => {
     <Dialog 
       open={open} 
       onClose={onClose} 
-      maxWidth="md" 
+      maxWidth="sm" 
       fullWidth
       PaperProps={{
         sx: { 
-          borderRadius: 8, 
+          borderRadius: 3, 
           m: { xs: 2, sm: 'auto' }, 
           p: 0,
           overflow: 'hidden',
-          boxShadow: '0 50px 120px rgba(0,0,0,0.15)',
-          bgcolor: 'transparent'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         }
       }}
     >
       <DialogTitle sx={{ 
           display: 'flex', 
-          justifyContent: 'space-between', 
+          justifyContent: 'center', 
           alignItems: 'center', 
-          pt: 4, 
-          px: 5,
+          position: 'relative',
+          pt: 3, 
+          px: 3,
           pb: 2,
           bgcolor: 'background.paper',
-          borderBottom: '1px solid',
-          borderColor: 'divider'
       }}>
-        <Typography variant="h5" fontWeight={900} display="flex" alignItems="center" gap={2} color="primary.main" sx={{ letterSpacing: '-1px' }}>
-          <TicketIcon sx={{ fontSize: 32 }} /> Your E-Tickets
+        <TicketIcon sx={{ color: '#145c47', fontSize: 32, position: 'absolute', left: 24, transform: 'rotate(90deg)' }} />
+        <Typography variant="h6" fontWeight={800} color="text.primary">
+          Your E-Tickets
         </Typography>
-        <IconButton onClick={onClose} size="medium" sx={{ bgcolor: alpha(theme.palette.text.secondary, 0.05) }}>
+        <IconButton onClick={onClose} size="small" sx={{ bgcolor: '#f1f5f9', position: 'absolute', right: 24 }}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
@@ -170,11 +173,11 @@ const EventTicketModal = ({ open, onClose, booking }) => {
              {/* Ticket Container (Vertical) */}
              <Box 
                 sx={{ 
-                    maxWidth: 480,
+                    maxWidth: 500,
                     mx: 'auto',
-                    borderRadius: 8,
-                    overflow: 'visible', // Visible for notches
-                    boxShadow: '0 40px 100px rgba(0,0,0,0.12)',
+                    borderRadius: 4,
+                    overflow: 'visible',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
                     bgcolor: 'white',
                     position: 'relative',
                     mb: 5
@@ -182,10 +185,10 @@ const EventTicketModal = ({ open, onClose, booking }) => {
              >
                 {/* 1. Header Section (Image & Brand) */}
                 <Box sx={{ 
-                    height: 220, 
+                    height: 240, 
                     position: 'relative',
-                    borderTopLeftRadius: 32,
-                    borderTopRightRadius: 32,
+                    borderTopLeftRadius: 16,
+                    borderTopRightRadius: 16,
                     overflow: 'hidden'
                 }}>
                     <Box 
@@ -201,68 +204,56 @@ const EventTicketModal = ({ open, onClose, booking }) => {
                         sx={{ 
                             position: 'absolute',
                             inset: 0,
-                            background: 'linear-gradient(to bottom, transparent 20%, rgba(0,0,0,0.8) 100%)',
+                            background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.9) 100%)',
                         }}
                     />
                     
-                    <Box sx={{ position: 'relative', p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                        <Box 
-                            sx={{ 
-                                alignSelf: 'flex-start',
-                                bgcolor: '#fbbf24', 
-                                px: 1.5, 
-                                py: 0.5, 
-                                borderRadius: 1.5,
-                            }}
-                        >
-                            <Typography variant="caption" sx={{ fontWeight: 900, color: '#111', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                {currentTicket.booking?.event?.category?.category_name || "VIP ACCESS"}
-                            </Typography>
-                        </Box>
-                        
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <Box sx={{ position: 'relative', p: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 3 }}>
                             <Typography 
                                 variant="h4" 
                                 sx={{ 
                                     fontWeight: 900, 
                                     color: 'white', 
-                                    maxWidth: '70%',
                                     lineHeight: 1.1,
-                                    letterSpacing: '-1px'
+                                    maxWidth: '75%',
+                                    letterSpacing: '-0.5px'
                                 }}
                             >
-                                {currentTicket.booking?.event?.event_name}
+                                {currentTicket.booking?.event?.event_name || 'Improving life chances and making hope'}
                             </Typography>
-                            <Box sx={{ textAlign: 'right' }}>
-                                <Typography variant="caption" sx={{ color: '#fbbf24', fontWeight: 800, textTransform: 'uppercase' }}>Price</Typography>
-                                <Typography variant="h5" sx={{ color: 'white', fontWeight: 900 }}>${currentTicket.booking?.total_amount || '149.00'}</Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                                <Box sx={{ bgcolor: 'white', px: 1.5, py: 0.3, borderRadius: 4, mb: 0.5 }}>
+                                    <Typography variant="caption" sx={{ color: '#111', fontWeight: 900, fontSize: '0.65rem' }}>PRICE</Typography>
+                                </Box>
+                                <Typography variant="h5" sx={{ color: 'white', fontWeight: 800, lineHeight: 1 }}>${currentTicket.booking?.total_amount || '0.01'}</Typography>
                             </Box>
                         </Box>
                     </Box>
                 </Box>
 
                 {/* 2. Info Section (White) */}
-                <Box sx={{ p: 4, position: 'relative' }}>
+                <Box sx={{ p: 4, pt: 5 }}>
                     <Grid container spacing={4} sx={{ mb: 5 }}>
                         <Grid item xs={6}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5 }}>Date & Time</Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 900, mt: 0.5 }}>
-                                {currentTicket.booking?.event?.event_date ? new Date(currentTicket.booking.event.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '24 OCT, 2024'}
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Date & Time</Typography>
+                            <Typography variant="body1" sx={{ color: '#1e293b', fontWeight: 900, mt: 0.5 }}>
+                                {currentTicket.booking?.event?.event_date ? new Date(currentTicket.booking.event.event_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '28 Mar 2026'}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Starts at {currentTicket.booking?.event?.start_time || '20:00'}</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Starts at {currentTicket.booking?.event?.start_time || '17:32:00'}</Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5 }}>Location</Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 900, mt: 0.5 }}>{currentTicket.booking?.event?.venue?.name || 'Starlight Arena'}</Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Phnom Penh, KH</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Location</Typography>
+                            <Typography variant="body1" sx={{ color: '#1e293b', fontWeight: 900, mt: 0.5 }}>{currentTicket.booking?.event?.venue?.name || 'Vel Vang'}</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>{currentTicket.booking?.event?.venue?.city || 'Phnom Penh, KH'}</Typography>
                         </Grid>
                         <Grid item xs={6}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5 }}>Gate / Section</Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 900, mt: 0.5 }}>Gate G4 / Sec B</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Gate / Section</Typography>
+                            <Typography variant="body1" sx={{ color: '#1e293b', fontWeight: 900, mt: 0.5 }}>Gate G4 / Sec B</Typography>
                         </Grid>
                         <Grid item xs={6} sx={{ textAlign: 'right' }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5 }}>Seat Number</Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 900, mt: 0.5, fontStyle: 'italic' }}>{currentTicket.booking?.ticket?.ticket_type}-ROW-12 / 42</Typography>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.2 }}>Seat Number</Typography>
+                            <Typography variant="body1" sx={{ color: '#1e293b', fontWeight: 900, mt: 0.5 }}>{currentTicket.booking?.ticket?.ticket_type || 'VIP'}-ROW-12 / 42</Typography>
                         </Grid>
                     </Grid>
 
@@ -274,58 +265,54 @@ const EventTicketModal = ({ open, onClose, booking }) => {
                             display: 'block', 
                             textAlign: 'center', 
                             fontFamily: 'monospace', 
-                            color: 'text.secondary',
+                            color: '#64748b',
                             letterSpacing: 3,
-                            fontWeight: 600,
+                            fontWeight: 700,
                             mt: 1
                         }}
                     >
-                        TICKET CODE: {currentTicket.ticket_code}
+                        TICKET CODE: {currentTicket.ticket_code || 'TIX RWDJ9U'}
                     </Typography>
+                </Box>
 
-                    <TicketNotch top="calc(100% - 12px)" />
+                {/* Notch and Separator */}
+                <Box sx={{ position: 'relative', my: 2 }}>
+                    <TicketNotch />
+                    <Divider sx={{ borderStyle: 'dashed', borderColor: '#e2e8f0', mx: 3 }} />
                 </Box>
 
                 {/* 3. Bottom Section (Entry Pass) */}
-                <Box sx={{ px: 4, pt: 1, pb: 4 }}>
-                   <Divider sx={{ borderStyle: 'dashed', borderColor: '#e2e8f0', mb: 3 }} />
-                   
-                   <Box 
+                <Box sx={{ px: 4, pt: 2, pb: 4 }}>
+                    <Box 
                     sx={{ 
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center',
                         bgcolor: '#f1f5f9',
                         p: 3,
-                        borderRadius: 6
+                        px: 4,
+                        borderRadius: '40px'
                     }}
-                   >
+                    >
                         <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 2 }}>Entry Pass</Typography>
-                            <Typography variant="h5" sx={{ fontWeight: 900, mb: 1, color: '#1e293b' }}>ADMIT ONE</Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <DotIcon sx={{ fontSize: 10, color: '#10b981' }} />
-                                <Typography variant="caption" sx={{ fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>Valid Ticket</Typography>
-                            </Box>
+                            <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>Entry Pass</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: '#0f172a', mt: 0.5 }}>ADMIT ONE</Typography>
                         </Box>
                         
                         <Box 
                             sx={{ 
-                                bgcolor: 'white', 
-                                p: 1, 
-                                borderRadius: 3, 
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
-                                display: 'flex'
+                                display: 'flex',
+                                mixBlendMode: 'multiply'
                             }}
                         >
                             <Box 
                                 component="img"
-                                src={currentTicket.qr_code}
+                                src={currentTicket.qr_code || 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example'}
                                 alt="QR"
                                 sx={{ width: 80, height: 80 }}
                             />
                         </Box>
-                   </Box>
+                    </Box>
                 </Box>
              </Box>
 
@@ -348,62 +335,41 @@ const EventTicketModal = ({ open, onClose, booking }) => {
                  </Box>
              )}
 
-             <Stack spacing={2} sx={{ maxWidth: 480, mx: 'auto' }}>
+             <Stack direction="row" spacing={2} sx={{ maxWidth: 480, mx: 'auto' }}>
                  <Button 
-                    fullWidth 
-                    variant="contained" 
-                    size="large"
-                    startIcon={<PrintIcon />}
-                    sx={{ 
-                        py: 2, 
-                        borderRadius: 4, 
-                        fontWeight: 900, 
-                        fontSize: '1.1rem',
-                        bgcolor: '#111',
-                        color: 'white',
-                        '&:hover': { bgcolor: '#000' }
-                    }}
+                     fullWidth 
+                     variant="contained" 
+                     size="large"
+                     startIcon={<DownloadIcon />}
+                     onClick={handleDownloadTicket}
+                     sx={{ 
+                         py: 1.8, 
+                         borderRadius: 4, 
+                         fontWeight: 900, 
+                         bgcolor: '#111',
+                         color: 'white',
+                         '&:hover': { bgcolor: '#000' }
+                     }}
                  >
-                     Print Ticket
+                     Download
                  </Button>
-                 
-                 <Stack direction="row" spacing={2}>
-                    <Button 
-                        fullWidth 
-                        variant="outlined" 
-                        size="large"
-                        startIcon={<DownloadIcon />}
-                        onClick={handleDownloadTicket}
-                        sx={{ 
-                            py: 1.8, 
-                            borderRadius: 4, 
-                            fontWeight: 900, 
-                            color: '#111', 
-                            borderColor: '#e2e8f0',
-                            bgcolor: 'white',
-                            '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
-                        }}
-                    >
-                        Download
-                    </Button>
-                    <Button 
-                        fullWidth 
-                        variant="outlined" 
-                        size="large"
-                        startIcon={<ShareIcon />}
-                        sx={{ 
-                            py: 1.8, 
-                            borderRadius: 4, 
-                            fontWeight: 900, 
-                            color: '#111', 
-                            borderColor: '#e2e8f0',
-                            bgcolor: 'white',
-                            '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
-                        }}
-                    >
-                        Share
-                    </Button>
-                 </Stack>
+                 <Button 
+                     fullWidth 
+                     variant="outlined" 
+                     size="large"
+                     startIcon={<ShareIcon />}
+                     sx={{ 
+                         py: 1.8, 
+                         borderRadius: 4, 
+                         fontWeight: 900, 
+                         color: '#111', 
+                         borderColor: '#e2e8f0',
+                         bgcolor: 'white',
+                         '&:hover': { borderColor: '#cbd5e1', bgcolor: '#f8fafc' }
+                     }}
+                 >
+                     Share
+                 </Button>
              </Stack>
           </Box>
         ) : (

@@ -27,11 +27,16 @@
     "user_client": "User Client",
     "settings": "Settings",
     "general": "General",
-    "security": "Security"
+    "security": "Security",
+    "analytics": "Analytics",
+    "event_booking_report": "Event Report",
+    "check_in_report": "Check-in Report"
   },
   "header": {
     "user_list": "User List",
-    "user_roles": "User Roles"
+    "user_roles": "User Roles",
+    "booking_detail": "Booking Detail",
+    "check_in_detail": "Check-in Detail"
   },
   "navbar": {
     "browse_events": "Browse Events",
@@ -54,5 +59,130 @@
     "avg_price": "Avg Price",
     "total_est_rev": "Total Est. Rev",
     "no_event_data": "No event data available."
+  },
+  "event_list": {
+    "title": "Event Management",
+    "subtitle": "Manage all system events, schedules, and statuses",
+    "load_error": "Failed to load events. Please try again.",
+    "add_new": "Add New Event",
+    "search": "Search events...",
+    "status": "Status",
+    "all_statuses": "All Statuses",
+    "upcoming": "Upcoming",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "table": {
+      "id": "ID",
+      "event": "Event",
+      "category_venue": "Category & Venue",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions",
+      "no_found": "No events found."
+    },
+    "actions": {
+      "view": "View Details",
+      "edit": "Edit",
+      "delete": "Delete",
+      "delete_confirm": "Are you sure you want to delete this event?"
+    },
+    "modal": {
+      "edit_title": "Edit Event",
+      "create_title": "Create New Event",
+      "name": "Event Name",
+      "organizer": "Organizer",
+      "date": "Event Date",
+      "start_time": "Start Time",
+      "end_time": "End Time",
+      "category": "Category",
+      "venue": "Venue",
+      "location": "Location (Display Only)",
+      "description": "Description",
+      "upload_title": "Upload event cover image",
+      "select_image": "Select Image",
+      "change_image": "Change Image",
+      "cancel": "Cancel",
+      "create_button": "Create Event",
+      "update_button": "Update Event"
+    }
+  },
+  "admin_common": {
+    "search": "Search",
+    "reset": "Reset",
+    "sort_by": "Sort By",
+    "sort_order": "Sort Order",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "actions": "Actions",
+    "rows_per_page": "Rows per page:",
+    "all": "All",
+    "id": "ID",
+    "status": "Status",
+    "delete_confirm": "Are you sure you want to delete this item?",
+    "delete_success": "Deleted successfully",
+    "load_failed": "Failed to load data"
+  },
+  "ticket_list": {
+    "title": "Ticket Management",
+    "add_new": "Add Ticket",
+    "search_placeholder": "Search ticket...",
+    "table": {
+      "event": "Event",
+      "type": "Ticket Type",
+      "price": "Price",
+      "quantity": "Quantity",
+      "sold": "Sold"
+    },
+    "no_found": "No tickets found"
+  },
+  "venue_list": {
+    "title": "Venue Management",
+    "add_new": "Add Venue",
+    "search_placeholder": "Search venue name, address, contact...",
+    "table": {
+      "id": "Venue ID",
+      "name": "Name",
+      "address": "Address",
+      "capacity": "Capacity",
+      "contact": "Contact Info"
+    },
+    "no_found": "No venues found"
+  },
+  "booking_list": {
+    "title": "Booking Management",
+    "add_new": "Add Booking",
+    "search_placeholder": "Search booking...",
+    "table": {
+      "customer": "Customer",
+      "event": "Event",
+      "ticket": "Ticket",
+      "quantity": "Quantity",
+      "total_amount": "Total Amount"
+    },
+    "no_found": "No bookings found"
+  },
+  "category_list": {
+    "title": "Category Management",
+    "add_new": "Add Category",
+    "search_placeholder": "Search category...",
+    "table": {
+      "name": "Name",
+      "description": "Description"
+    },
+    "no_found": "No categories found"
+  },
+  "customer_list": {
+    "title": "Customer Management",
+    "add_new": "Add Customer",
+    "search_placeholder": "Search customer...",
+    "table": {
+      "picture": "Picture",
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "email": "Email",
+      "role": "Role"
+    },
+    "no_found": "No customers found"
   }
 }

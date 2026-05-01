@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Paper,
@@ -27,6 +28,7 @@ import { getPaginatedVenues, deleteVenue } from "../../../api/venue.api";
 export default function VenueList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -113,19 +115,19 @@ export default function VenueList() {
 
   const handleDelete = async (venueId) => {
     if (!venueId) {
-      showSnackbar("Venue ID not found", "error");
+      showSnackbar(t("admin_common.load_failed"), "error");
       return;
     }
 
-    if (!window.confirm("Are you sure you want to delete this venue?")) return;
+    if (!window.confirm(t("admin_common.delete_confirm"))) return;
 
     try {
       await deleteVenue(venueId);
       setVenues((prev) => prev.filter((venue) => venue.venue_id !== venueId));
-      showSnackbar("Venue deleted successfully");
+      showSnackbar(t("admin_common.delete_success"));
     } catch (error) {
       console.error("Delete failed:", error?.response?.data || error);
-      showSnackbar("Delete failed", "error");
+      showSnackbar(t("admin_common.load_failed"), "error");
     }
   };
 
@@ -156,7 +158,7 @@ export default function VenueList() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Venue Management
+        {t("venue_list.title")}
       </Typography>
 
       <Paper
@@ -177,12 +179,13 @@ export default function VenueList() {
           <Stack
             direction={{ xs: "column", md: "row" }}
             spacing={2}
+            alignItems="center"
             sx={{ flex: 1 }}
           >
             <TextField
               fullWidth
               size="small"
-              placeholder="Search venue name, address, contact..."
+              placeholder={t("venue_list.search_placeholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -200,49 +203,49 @@ export default function VenueList() {
             <TextField
               select
               size="small"
-              label="Sort By"
+              label={t("admin_common.sort_by")}
               value={sortBy}
               onChange={handleSortByChange}
               sx={{ minWidth: 160 }}
             >
-              <MenuItem value="name">Name</MenuItem>
-              <MenuItem value="venue_id">Venue ID</MenuItem>
-              <MenuItem value="capacity">Capacity</MenuItem>
-              <MenuItem value="address">Address</MenuItem>
+              <MenuItem value="name">{t("venue_list.table.name")}</MenuItem>
+              <MenuItem value="venue_id">{t("venue_list.table.id")}</MenuItem>
+              <MenuItem value="capacity">{t("venue_list.table.capacity")}</MenuItem>
+              <MenuItem value="address">{t("venue_list.table.address")}</MenuItem>
             </TextField>
 
             <TextField
               select
               size="small"
-              label="Sort Order"
+              label={t("admin_common.sort_order")}
               value={sortOrder}
               onChange={handleSortOrderChange}
               sx={{ minWidth: 160 }}
             >
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
+              <MenuItem value="asc">{t("admin_common.ascending")}</MenuItem>
+              <MenuItem value="desc">{t("admin_common.descending")}</MenuItem>
             </TextField>
 
             <Button
               variant="contained"
               onClick={handleSearch}
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}
             >
-              Search
+              {t("admin_common.search")}
             </Button>
 
             <Button
               variant="outlined"
               startIcon={<Refresh />}
               onClick={handleReset}
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}
             >
-              Reset
+              {t("admin_common.reset")}
             </Button>
           </Stack>
 
-          <Button variant="contained" onClick={() => navigate("add")}>
-            Add Venue
+          <Button variant="contained" onClick={() => navigate("add")} sx={{ whiteSpace: 'nowrap' }}>
+            {t("venue_list.add_new")}
           </Button>
         </Stack>
       </Paper>
@@ -265,12 +268,12 @@ export default function VenueList() {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell><strong>Venue ID</strong></TableCell>
-                    <TableCell><strong>Name</strong></TableCell>
-                    <TableCell><strong>Address</strong></TableCell>
-                    <TableCell><strong>Capacity</strong></TableCell>
-                    <TableCell><strong>Contact Info</strong></TableCell>
-                    <TableCell align="center"><strong>Actions</strong></TableCell>
+                    <TableCell><strong>{t("venue_list.table.id")}</strong></TableCell>
+                    <TableCell><strong>{t("venue_list.table.name")}</strong></TableCell>
+                    <TableCell><strong>{t("venue_list.table.address")}</strong></TableCell>
+                    <TableCell><strong>{t("venue_list.table.capacity")}</strong></TableCell>
+                    <TableCell><strong>{t("venue_list.table.contact")}</strong></TableCell>
+                    <TableCell align="center"><strong>{t("admin_common.actions")}</strong></TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -301,7 +304,7 @@ export default function VenueList() {
                   {!loading && venues.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} align="center">
-                        No venues found
+                        {t("venue_list.no_found")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -317,6 +320,7 @@ export default function VenueList() {
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              labelRowsPerPage={t("admin_common.rows_per_page")}
             />
           </>
         )}

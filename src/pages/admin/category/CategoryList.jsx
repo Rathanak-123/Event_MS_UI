@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Paper,
   Table,
@@ -36,6 +37,7 @@ export default function CategoryList() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -75,7 +77,8 @@ export default function CategoryList() {
       setCategories(data?.items || data?.results || data?.data || []);
       setTotalRows(data?.total || data?.count || 0);
     } catch (error) {
-      showSnackbar("Failed to load categories", "error");
+      console.error("Failed to load categories:", error);
+      showSnackbar(t("admin_common.load_failed"), "error");
       setCategories([]);
       setTotalRows(0);
     } finally {
@@ -91,18 +94,18 @@ export default function CategoryList() {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
- const handleDelete = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this category?")) return;
+  const handleDelete = async (id) => {
+  if (!window.confirm(t("admin_common.delete_confirm"))) return;
 
   try {
     await deleteCategory(id);
     setCategories((prev) =>
       prev.filter((category) => category.id !== id)
     );
-    showSnackbar("Category deleted successfully!");
+    showSnackbar(t("admin_common.delete_success"));
     fetchCategories();
   } catch (error) {
-    showSnackbar("Delete failed", "error");
+    showSnackbar(t("admin_common.load_failed"), "error");
   }
 };
 
@@ -119,7 +122,7 @@ export default function CategoryList() {
   return (
     <Box>
       <Typography variant="h4" mb={3} fontWeight="bold">
-        Category Management
+        {t("category_list.title")}
       </Typography>
 
       <Box
@@ -128,7 +131,7 @@ export default function CategoryList() {
         alignItems="center"
         mb={3}>
         <TextField
-          placeholder="Search category..."
+          placeholder={t("category_list.search_placeholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           size="small"
@@ -143,7 +146,7 @@ export default function CategoryList() {
         />
 
         <Button variant="contained" onClick={() => navigate("add")}>
-          Add Category
+          {t("category_list.add_new")}
         </Button>
       </Box>
 
@@ -157,9 +160,9 @@ export default function CategoryList() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>{t("category_list.table.name")}</TableCell>
+                  <TableCell>{t("category_list.table.description")}</TableCell>
+                  <TableCell align="center">{t("admin_common.actions")}</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -186,7 +189,7 @@ export default function CategoryList() {
                 {categories.length === 0 && !loading && (
                   <TableRow>
                     <TableCell colSpan={3} align="center">
-                      No categories found
+                      {t("category_list.no_found")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -202,6 +205,7 @@ export default function CategoryList() {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25, 50]}
+            labelRowsPerPage={t("admin_common.rows_per_page")}
           />
         </Paper>
       )}

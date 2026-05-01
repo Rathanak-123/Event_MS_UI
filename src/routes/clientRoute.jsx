@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import ClientLayout from "../layouts/ClientLayout";
 import HomePage from "../pages/Client/HomePage";
-import LoginPage from "../pages/Client/LoginPage";
 import SignupPage from "../pages/Client/SignupPage";
 import EventDetailPage from "../pages/Client/EventDetailPage";
 import BookingPage from "../pages/Client/BookingPage";
@@ -21,7 +20,7 @@ export default function ClientRouter() {
         <Route path="success" element={<SuccessPage />} />
         <Route path="my-bookings" element={<MyBookingsPage />} />
       </Route>
-      <Route path="login" element={<LoginPage />} />
+      <Route path="login" element={<SignupPage />} />
       <Route path="signup" element={<SignupPage />} />
     </Routes>
   );

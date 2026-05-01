@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Paper,
@@ -27,6 +28,7 @@ import { getAllBookings, deleteBooking } from "../../../api/booking.api";
 export default function BookingList() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [allBookings, setAllBookings] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -147,16 +149,16 @@ export default function BookingList() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this booking?"))
+    if (!window.confirm(t("admin_common.delete_confirm")))
       return;
 
     try {
       await deleteBooking(id);
       setAllBookings((prev) => prev.filter((booking) => booking.id !== id));
-      showSnackbar("Booking deleted successfully");
+      showSnackbar(t("admin_common.delete_success"));
     } catch (error) {
       console.error("Delete failed:", error?.response?.data || error);
-      showSnackbar("Delete failed", "error");
+      showSnackbar(t("admin_common.load_failed"), "error");
     }
   };
 
@@ -183,7 +185,7 @@ export default function BookingList() {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        Booking Management
+        {t("booking_list.title")}
       </Typography>
 
       <Paper
@@ -202,11 +204,12 @@ export default function BookingList() {
           <Stack
             direction={{ xs: "column", md: "row" }}
             spacing={2}
+            alignItems="center"
             sx={{ flex: 1 }}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search booking..."
+              placeholder={t("booking_list.search_placeholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
@@ -224,46 +227,46 @@ export default function BookingList() {
             <TextField
               select
               size="small"
-              label="Sort By"
+              label={t("admin_common.sort_by")}
               value={sortBy}
               onChange={handleSortByChange}
               sx={{ minWidth: 170 }}>
-              <MenuItem value="id">ID</MenuItem>
-              <MenuItem value="quantity">Quantity</MenuItem>
-              <MenuItem value="total_amount">Total Amount</MenuItem>
-              <MenuItem value="status">Status</MenuItem>
-              <MenuItem value="booking_date">Booking Date</MenuItem>
+              <MenuItem value="id">{t("admin_common.id")}</MenuItem>
+              <MenuItem value="quantity">{t("booking_list.table.quantity")}</MenuItem>
+              <MenuItem value="total_amount">{t("booking_list.table.total_amount")}</MenuItem>
+              <MenuItem value="status">{t("admin_common.status")}</MenuItem>
+              <MenuItem value="booking_date">{t("booking_list.table.date", "Booking Date")}</MenuItem>
             </TextField>
 
             <TextField
               select
               size="small"
-              label="Sort Order"
+              label={t("admin_common.sort_order")}
               value={sortOrder}
               onChange={handleSortOrderChange}
               sx={{ minWidth: 160 }}>
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
+              <MenuItem value="asc">{t("admin_common.ascending")}</MenuItem>
+              <MenuItem value="desc">{t("admin_common.descending")}</MenuItem>
             </TextField>
 
             <Button
               variant="contained"
               onClick={handleSearch}
-              sx={{ minWidth: 120 }}>
-              Search
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}>
+              {t("admin_common.search")}
             </Button>
 
             <Button
               variant="outlined"
               startIcon={<Refresh />}
               onClick={handleReset}
-              sx={{ minWidth: 120 }}>
-              Reset
+              sx={{ minWidth: 120, whiteSpace: 'nowrap' }}>
+              {t("admin_common.reset")}
             </Button>
           </Stack>
 
-          <Button variant="contained" onClick={() => navigate("add")}>
-            Add Booking
+          <Button variant="contained" onClick={() => navigate("add")} sx={{ whiteSpace: 'nowrap' }}>
+            {t("booking_list.add_new")}
           </Button>
         </Stack>
       </Paper>
@@ -286,28 +289,28 @@ export default function BookingList() {
                 <TableHead>
                   <TableRow>
                     <TableCell>
-                      <strong>ID</strong>
+                      <strong>{t("admin_common.id")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Customer</strong>
+                      <strong>{t("booking_list.table.customer")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Event</strong>
+                      <strong>{t("booking_list.table.event")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Ticket</strong>
+                      <strong>{t("booking_list.table.ticket")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Quantity</strong>
+                      <strong>{t("booking_list.table.quantity")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Total Amount</strong>
+                      <strong>{t("booking_list.table.total_amount")}</strong>
                     </TableCell>
                     <TableCell>
-                      <strong>Status</strong>
+                      <strong>{t("admin_common.status")}</strong>
                     </TableCell>
                     <TableCell align="center">
-                      <strong>Actions</strong>
+                      <strong>{t("admin_common.actions")}</strong>
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -342,7 +345,7 @@ export default function BookingList() {
                   {!loading && bookings.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={8} align="center">
-                        No bookings found
+                        {t("booking_list.no_found")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -358,6 +361,7 @@ export default function BookingList() {
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              labelRowsPerPage={t("admin_common.rows_per_page")}
             />
           </>
         )}
